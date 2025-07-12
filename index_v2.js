@@ -1,4 +1,4 @@
-// 订阅续期通知网站 - 基于CloudFlare Workers (完全优化版)
+// 訂閱续期通知网站 - 基于CloudFlare Workers (完全优化版)
 
 // 定义HTML模板
 const loginPage = `
@@ -7,7 +7,7 @@ const loginPage = `
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>订阅管理系统</title>
+  <title>訂閱管理系統</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
   <style>
@@ -41,14 +41,14 @@ const loginPage = `
 <body class="login-container flex items-center justify-center">
   <div class="login-box p-8 rounded-xl w-full max-w-md">
     <div class="text-center mb-8">
-      <h1 class="text-2xl font-bold text-gray-800"><i class="fas fa-calendar-check mr-2"></i>订阅管理系统</h1>
-      <p class="text-gray-600 mt-2">登录管理您的订阅提醒</p>
+      <h1 class="text-2xl font-bold text-gray-800"><i class="fas fa-calendar-check mr-2"></i>訂閱管理系統</h1>
+      <p class="text-gray-600 mt-2">登入管理您的訂閱提醒</p>
     </div>
     
     <form id="loginForm" class="space-y-6">
       <div>
         <label for="username" class="block text-sm font-medium text-gray-700 mb-1">
-          <i class="fas fa-user mr-2"></i>用户名
+          <i class="fas fa-user mr-2"></i>使用者名稱
         </label>
         <input type="text" id="username" name="username" required
           class="input-field w-full px-4 py-3 rounded-lg text-gray-700 focus:outline-none">
@@ -56,7 +56,7 @@ const loginPage = `
       
       <div>
         <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
-          <i class="fas fa-lock mr-2"></i>密码
+          <i class="fas fa-lock mr-2"></i>密碼
         </label>
         <input type="password" id="password" name="password" required
           class="input-field w-full px-4 py-3 rounded-lg text-gray-700 focus:outline-none">
@@ -64,7 +64,7 @@ const loginPage = `
       
       <button type="submit" 
         class="btn-primary w-full py-3 rounded-lg text-white font-medium focus:outline-none">
-        <i class="fas fa-sign-in-alt mr-2"></i>登录
+        <i class="fas fa-sign-in-alt mr-2"></i>登入
       </button>
       
       <div id="errorMsg" class="text-red-500 text-center"></div>
@@ -79,7 +79,7 @@ const loginPage = `
       
       const button = e.target.querySelector('button');
       const originalContent = button.innerHTML;
-      button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>登录中...';
+      button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>登入中...';
       button.disabled = true;
       
       try {
@@ -94,12 +94,12 @@ const loginPage = `
         if (result.success) {
           window.location.href = '/admin';
         } else {
-          document.getElementById('errorMsg').textContent = result.message || '用户名或密码错误';
+          document.getElementById('errorMsg').textContent = result.message || '使用者名稱或密碼錯誤';
           button.innerHTML = originalContent;
           button.disabled = false;
         }
       } catch (error) {
-        document.getElementById('errorMsg').textContent = '发生错误，请稍后再试';
+        document.getElementById('errorMsg').textContent = '發生錯誤，請稍後再試';
         button.innerHTML = originalContent;
         button.disabled = false;
       }
@@ -115,7 +115,7 @@ const adminPage = `
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>订阅管理系统</title>
+  <title>訂閱管理系統</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
   <style>
@@ -154,17 +154,17 @@ const adminPage = `
       <div class="flex justify-between h-16">
         <div class="flex items-center">
           <i class="fas fa-calendar-check text-indigo-600 text-2xl mr-2"></i>
-          <span class="font-bold text-xl text-gray-800">订阅管理系统</span>
+          <span class="font-bold text-xl text-gray-800">訂閱管理系統</span>
         </div>
         <div class="flex items-center space-x-4">
           <a href="/admin" class="text-indigo-600 border-b-2 border-indigo-600 px-3 py-2 rounded-md text-sm font-medium">
-            <i class="fas fa-list mr-1"></i>订阅列表
+            <i class="fas fa-list mr-1"></i>訂閱清單
           </a>
           <a href="/admin/config" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-            <i class="fas fa-cog mr-1"></i>系统配置
+            <i class="fas fa-cog mr-1"></i>系統設定
           </a>
           <a href="/api/logout" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-            <i class="fas fa-sign-out-alt mr-1"></i>退出登录
+            <i class="fas fa-sign-out-alt mr-1"></i>退出登入
           </a>
         </div>
       </div>
@@ -173,10 +173,10 @@ const adminPage = `
   
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="flex justify-between items-center mb-6">
-      <h2 class="text-2xl font-bold text-gray-800">订阅列表</h2>
+      <h2 class="text-2xl font-bold text-gray-800">訂閱清單</h2>
       <div class="flex space-x-2">
         <button id="addSubscriptionBtn" class="btn-primary text-white px-4 py-2 rounded-md text-sm font-medium flex items-center">
-          <i class="fas fa-plus mr-2"></i>添加新订阅
+          <i class="fas fa-plus mr-2"></i>新增訂閱
         </button>
       </div>
     </div>
@@ -185,13 +185,13 @@ const adminPage = `
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">名称</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">类型</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">名稱</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">類型</th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              到期时间 <i class="fas fa-sort-up ml-1 text-indigo-500" title="按到期时间升序排列"></i>
+              到期時間 <i class="fas fa-sort-up ml-1 text-indigo-500" title="按到期時間升序排列"></i>
             </th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">提醒设置</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">狀態</th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
           </tr>
         </thead>
@@ -201,12 +201,12 @@ const adminPage = `
     </div>
   </div>
 
-  <!-- 添加/编辑订阅的模态框 -->
+  <!-- 添加/編輯訂閱的模态框 -->
   <div id="subscriptionModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 modal-container hidden flex items-center justify-center z-50">
     <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
       <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 rounded-t-lg">
         <div class="flex items-center justify-between">
-          <h3 id="modalTitle" class="text-lg font-medium text-gray-900">添加新订阅</h3>
+          <h3 id="modalTitle" class="text-lg font-medium text-gray-900">新增訂閱</h3>
           <button id="closeModal" class="text-gray-400 hover:text-gray-600">
             <i class="fas fa-times text-xl"></i>
           </button>
@@ -218,14 +218,14 @@ const adminPage = `
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label for="name" class="block text-sm font-medium text-gray-700 mb-1">订阅名称 *</label>
+            <label for="name" class="block text-sm font-medium text-gray-700 mb-1">訂閱名稱 *</label>
             <input type="text" id="name" required
               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
             <div class="error-message text-red-500"></div>
           </div>
           
           <div>
-            <label for="customType" class="block text-sm font-medium text-gray-700 mb-1">订阅类型</label>
+            <label for="customType" class="block text-sm font-medium text-gray-700 mb-1">訂閱類型</label>
             <input type="text" id="customType" placeholder="例如：流媒体、云服务、软件等"
               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
             <div class="error-message text-red-500"></div>
@@ -234,7 +234,7 @@ const adminPage = `
         
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
-            <label for="startDate" class="block text-sm font-medium text-gray-700 mb-1">开始日期</label>
+            <label for="startDate" class="block text-sm font-medium text-gray-700 mb-1">開始日期</label>
             <input type="date" id="startDate"
               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
             <div class="error-message text-red-500"></div>
@@ -248,7 +248,7 @@ const adminPage = `
           </div>
           
           <div>
-            <label for="periodUnit" class="block text-sm font-medium text-gray-700 mb-1">周期单位 *</label>
+            <label for="periodUnit" class="block text-sm font-medium text-gray-700 mb-1">週期單位 *</label>
             <select id="periodUnit" required
               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
               <option value="day">天</option>
@@ -270,14 +270,14 @@ const adminPage = `
           <div class="flex items-end">
             <button type="button" id="calculateExpiryBtn" 
               class="btn-primary text-white px-4 py-2 rounded-md text-sm font-medium h-10">
-              <i class="fas fa-calculator mr-2"></i>自动计算到期日期
+              <i class="fas fa-calculator mr-2"></i>自動計算到期日期
             </button>
           </div>
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label for="reminderDays" class="block text-sm font-medium text-gray-700 mb-1">提前提醒天数</label>
+            <label for="reminderDays" class="block text-sm font-medium text-gray-700 mb-1">提前提醒天數</label>
             <input type="number" id="reminderDays" min="0" value="7"
               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
             <p class="text-xs text-gray-500 mt-1">0 = 仅到期日当天提醒，1+ = 提前N天开始提醒</p>
@@ -290,7 +290,7 @@ const adminPage = `
               <label class="inline-flex items-center">
                 <input type="checkbox" id="isActive" checked 
                   class="form-checkbox h-4 w-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500">
-                <span class="ml-2 text-sm text-gray-700">启用订阅</span>
+                <span class="ml-2 text-sm text-gray-700">啟用訂閱</span>
               </label>
               <label class="inline-flex items-center">
                 <input type="checkbox" id="autoRenew" checked 
@@ -302,8 +302,8 @@ const adminPage = `
         </div>
         
         <div>
-          <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">备注</label>
-          <textarea id="notes" rows="3" placeholder="可添加相关备注信息..."
+          <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">備註</label>
+          <textarea id="notes" rows="3" placeholder="可添加相关備註信息..."
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"></textarea>
           <div class="error-message text-red-500"></div>
         </div>
@@ -315,7 +315,7 @@ const adminPage = `
           </button>
           <button type="submit" 
             class="btn-primary text-white px-4 py-2 rounded-md text-sm font-medium">
-            <i class="fas fa-save mr-2"></i>保存
+            <i class="fas fa-save mr-2"></i>儲存
           </button>
         </div>
       </form>
@@ -372,7 +372,7 @@ const adminPage = `
 
       const name = document.getElementById('name').value.trim();
       if (!name) {
-        showFieldError('name', '请输入订阅名称');
+        showFieldError('name', '請输入訂閱名稱');
         isValid = false;
       }
 
@@ -384,7 +384,7 @@ const adminPage = `
 
       const expiryDate = document.getElementById('expiryDate').value;
       if (!expiryDate) {
-        showFieldError('expiryDate', '请选择到期日期');
+        showFieldError('expiryDate', '請选择到期日期');
         isValid = false;
       }
 
@@ -397,11 +397,11 @@ const adminPage = `
       return isValid;
     }
 
-    // 获取所有订阅并按到期时间排序
+    // 取得所有訂閱并按到期時間排序
     async function loadSubscriptions() {
       try {
         const tbody = document.getElementById('subscriptionsBody');
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>加载中...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>載入中...</td></tr>';
         
         const response = await fetch('/api/subscriptions');
         const data = await response.json();
@@ -409,11 +409,11 @@ const adminPage = `
         tbody.innerHTML = '';
         
         if (data.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">没有订阅数据</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">沒有訂閱資料</td></tr>';
           return;
         }
         
-        // 按到期时间升序排序（最早到期的在前）
+        // 按到期時間升序排序（最早到期的在前）
         data.sort((a, b) => new Date(a.expiryDate) - new Date(b.expiryDate));
         
         data.forEach(subscription => {
@@ -428,9 +428,9 @@ const adminPage = `
           if (!subscription.isActive) {
             statusHtml = '<span class="px-2 py-1 text-xs font-medium rounded-full text-white bg-gray-500"><i class="fas fa-pause-circle mr-1"></i>已停用</span>';
           } else if (daysDiff < 0) {
-            statusHtml = '<span class="px-2 py-1 text-xs font-medium rounded-full text-white bg-red-500"><i class="fas fa-exclamation-circle mr-1"></i>已过期</span>';
+            statusHtml = '<span class="px-2 py-1 text-xs font-medium rounded-full text-white bg-red-500"><i class="fas fa-exclamation-circle mr-1"></i>已過期</span>';
           } else if (daysDiff <= (subscription.reminderDays || 7)) {
-            statusHtml = '<span class="px-2 py-1 text-xs font-medium rounded-full text-white bg-yellow-500"><i class="fas fa-exclamation-triangle mr-1"></i>即将到期</span>';
+            statusHtml = '<span class="px-2 py-1 text-xs font-medium rounded-full text-white bg-yellow-500"><i class="fas fa-exclamation-triangle mr-1"></i>即將到期</span>';
           } else {
             statusHtml = '<span class="px-2 py-1 text-xs font-medium rounded-full text-white bg-green-500"><i class="fas fa-check-circle mr-1"></i>正常</span>';
           }
@@ -458,7 +458,7 @@ const adminPage = `
             '</td>' +
             '<td class="px-6 py-4 whitespace-nowrap">' + 
               '<div class="text-sm text-gray-900">' + new Date(subscription.expiryDate).toLocaleDateString() + '</div>' +
-              '<div class="text-xs text-gray-500">' + (daysDiff < 0 ? '已过期' + Math.abs(daysDiff) + '天' : '还剩' + daysDiff + '天') + '</div>' +
+              '<div class="text-xs text-gray-500">' + (daysDiff < 0 ? '已過期' + Math.abs(daysDiff) + '天' : '還剩' + daysDiff + '天') + '</div>' +
               (subscription.startDate ? '<div class="text-xs text-gray-500">开始: ' + new Date(subscription.startDate).toLocaleDateString() + '</div>' : '') +
             '</td>' +
             '<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">' + 
@@ -468,11 +468,11 @@ const adminPage = `
             '<td class="px-6 py-4 whitespace-nowrap">' + statusHtml + '</td>' +
             '<td class="px-6 py-4 whitespace-nowrap text-sm font-medium">' +
               '<div class="flex flex-wrap gap-1">' +
-                '<button class="edit btn-primary text-white px-2 py-1 rounded text-xs" data-id="' + subscription.id + '"><i class="fas fa-edit mr-1"></i>编辑</button>' +
-                '<button class="delete btn-danger text-white px-2 py-1 rounded text-xs" data-id="' + subscription.id + '"><i class="fas fa-trash-alt mr-1"></i>删除</button>' +
+                '<button class="edit btn-primary text-white px-2 py-1 rounded text-xs" data-id="' + subscription.id + '"><i class="fas fa-edit mr-1"></i>編輯</button>' +
+                '<button class="delete btn-danger text-white px-2 py-1 rounded text-xs" data-id="' + subscription.id + '"><i class="fas fa-trash-alt mr-1"></i>刪除</button>' +
                 (subscription.isActive ? 
                   '<button class="toggle-status btn-warning text-white px-2 py-1 rounded text-xs" data-id="' + subscription.id + '" data-action="deactivate"><i class="fas fa-pause-circle mr-1"></i>停用</button>' : 
-                  '<button class="toggle-status btn-success text-white px-2 py-1 rounded text-xs" data-id="' + subscription.id + '" data-action="activate"><i class="fas fa-play-circle mr-1"></i>启用</button>') +
+                  '<button class="toggle-status btn-success text-white px-2 py-1 rounded text-xs" data-id="' + subscription.id + '" data-action="activate"><i class="fas fa-play-circle mr-1"></i>啟用</button>') +
               '</div>' +
             '</td>';
           
@@ -491,10 +491,10 @@ const adminPage = `
           button.addEventListener('click', toggleSubscriptionStatus);
         });
       } catch (error) {
-        console.error('加载订阅失败:', error);
+        console.error('載入訂閱失敗:', error);
         const tbody = document.getElementById('subscriptionsBody');
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-red-500"><i class="fas fa-exclamation-circle mr-2"></i>加载失败，请刷新页面重试</td></tr>';
-        showToast('加载订阅列表失败', 'error');
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-red-500"><i class="fas fa-exclamation-circle mr-2"></i>載入失敗，請重新整理頁面重試</td></tr>';
+        showToast('載入訂閱清單失敗', 'error');
       }
     }
     
@@ -505,7 +505,7 @@ const adminPage = `
       
       const button = e.target.tagName === 'BUTTON' ? e.target : e.target.parentElement;
       const originalContent = button.innerHTML;
-      button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>' + (isActivate ? '启用中...' : '停用中...');
+      button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>' + (isActivate ? '啟用中...' : '停用中...');
       button.disabled = true;
       
       try {
@@ -516,24 +516,24 @@ const adminPage = `
         });
         
         if (response.ok) {
-          showToast((isActivate ? '启用' : '停用') + '成功', 'success');
+          showToast((isActivate ? '啟用' : '停用') + '成功', 'success');
           loadSubscriptions();
         } else {
           const error = await response.json();
-          showToast((isActivate ? '启用' : '停用') + '失败: ' + (error.message || '未知错误'), 'error');
+          showToast((isActivate ? '啟用' : '停用') + '失敗: ' + (error.message || '未知錯誤'), 'error');
           button.innerHTML = originalContent;
           button.disabled = false;
         }
       } catch (error) {
-        console.error((isActivate ? '启用' : '停用') + '订阅失败:', error);
-        showToast((isActivate ? '启用' : '停用') + '失败，请稍后再试', 'error');
+        console.error((isActivate ? '啟用' : '停用') + '訂閱失敗:', error);
+        showToast((isActivate ? '啟用' : '停用') + '失敗，請稍后再试', 'error');
         button.innerHTML = originalContent;
         button.disabled = false;
       }
     }
     
     document.getElementById('addSubscriptionBtn').addEventListener('click', () => {
-      document.getElementById('modalTitle').textContent = '添加新订阅';
+      document.getElementById('modalTitle').textContent = '新增訂閱';
       document.getElementById('subscriptionModal').classList.remove('hidden');
       
       document.getElementById('subscriptionForm').reset();
@@ -621,7 +621,7 @@ const adminPage = `
       
       const submitButton = e.target.querySelector('button[type="submit"]');
       const originalContent = submitButton.innerHTML;
-      submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>' + (id ? '更新中...' : '保存中...');
+      submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>' + (id ? '更新中...' : '儲存中...');
       submitButton.disabled = true;
       
       try {
@@ -637,15 +637,15 @@ const adminPage = `
         const result = await response.json();
         
         if (result.success) {
-          showToast((id ? '更新' : '添加') + '订阅成功', 'success');
+          showToast((id ? '更新' : '添加') + '訂閱成功', 'success');
           document.getElementById('subscriptionModal').classList.add('hidden');
           loadSubscriptions();
         } else {
-          showToast((id ? '更新' : '添加') + '订阅失败: ' + (result.message || '未知错误'), 'error');
+          showToast((id ? '更新' : '添加') + '訂閱失敗: ' + (result.message || '未知錯誤'), 'error');
         }
       } catch (error) {
-        console.error((id ? '更新' : '添加') + '订阅失败:', error);
-        showToast((id ? '更新' : '添加') + '订阅失败，请稍后再试', 'error');
+        console.error((id ? '更新' : '添加') + '訂閱失敗:', error);
+        showToast((id ? '更新' : '添加') + '訂閱失敗，請稍后再试', 'error');
       } finally {
         submitButton.innerHTML = originalContent;
         submitButton.disabled = false;
@@ -660,7 +660,7 @@ const adminPage = `
         const subscription = await response.json();
         
         if (subscription) {
-          document.getElementById('modalTitle').textContent = '编辑订阅';
+          document.getElementById('modalTitle').textContent = '編輯訂閱';
           document.getElementById('subscriptionId').value = subscription.id;
           document.getElementById('name').value = subscription.name;
           document.getElementById('customType').value = subscription.customType || '';
@@ -678,21 +678,21 @@ const adminPage = `
           setupModalEventListeners();
         }
       } catch (error) {
-        console.error('获取订阅信息失败:', error);
-        showToast('获取订阅信息失败', 'error');
+        console.error('取得訂閱信息失敗:', error);
+        showToast('取得訂閱信息失敗', 'error');
       }
     }
     
     async function deleteSubscription(e) {
       const id = e.target.dataset.id || e.target.parentElement.dataset.id;
       
-      if (!confirm('确定要删除这个订阅吗？此操作不可恢复。')) {
+      if (!confirm('確定要刪除这個訂閱吗？此操作不可恢復。')) {
         return;
       }
       
       const button = e.target.tagName === 'BUTTON' ? e.target : e.target.parentElement;
       const originalContent = button.innerHTML;
-      button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>删除中...';
+      button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>刪除中...';
       button.disabled = true;
       
       try {
@@ -701,17 +701,17 @@ const adminPage = `
         });
         
         if (response.ok) {
-          showToast('删除成功', 'success');
+          showToast('刪除成功', 'success');
           loadSubscriptions();
         } else {
           const error = await response.json();
-          showToast('删除失败: ' + (error.message || '未知错误'), 'error');
+          showToast('刪除失敗: ' + (error.message || '未知錯誤'), 'error');
           button.innerHTML = originalContent;
           button.disabled = false;
         }
       } catch (error) {
-        console.error('删除订阅失败:', error);
-        showToast('删除失败，请稍后再试', 'error');
+        console.error('刪除訂閱失敗:', error);
+        showToast('刪除失敗，請稍后再试', 'error');
         button.innerHTML = originalContent;
         button.disabled = false;
       }
@@ -729,7 +729,7 @@ const configPage = `
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>系统配置 - 订阅管理系统</title>
+  <title>系統設定 - 訂閱管理系統</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
   <style>
@@ -773,17 +773,17 @@ const configPage = `
       <div class="flex justify-between h-16">
         <div class="flex items-center">
           <i class="fas fa-calendar-check text-indigo-600 text-2xl mr-2"></i>
-          <span class="font-bold text-xl text-gray-800">订阅管理系统</span>
+          <span class="font-bold text-xl text-gray-800">訂閱管理系統</span>
         </div>
         <div class="flex items-center space-x-4">
           <a href="/admin" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-            <i class="fas fa-list mr-1"></i>订阅列表
+            <i class="fas fa-list mr-1"></i>訂閱清單
           </a>
           <a href="/admin/config" class="text-indigo-600 border-b-2 border-indigo-600 px-3 py-2 rounded-md text-sm font-medium">
-            <i class="fas fa-cog mr-1"></i>系统配置
+            <i class="fas fa-cog mr-1"></i>系統設定
           </a>
           <a href="/api/logout" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-            <i class="fas fa-sign-out-alt mr-1"></i>退出登录
+            <i class="fas fa-sign-out-alt mr-1"></i>退出登入
           </a>
         </div>
       </div>
@@ -792,20 +792,20 @@ const configPage = `
   
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="bg-white rounded-lg shadow-md p-6">
-      <h2 class="text-2xl font-bold text-gray-800 mb-6">系统配置</h2>
+      <h2 class="text-2xl font-bold text-gray-800 mb-6">系統設定</h2>
       
       <form id="configForm" class="space-y-8">
         <div class="border-b border-gray-200 pb-6">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">管理员账户</h3>
+          <h3 class="text-lg font-medium text-gray-900 mb-4">管理員帳戶</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label for="adminUsername" class="block text-sm font-medium text-gray-700">用户名</label>
+              <label for="adminUsername" class="block text-sm font-medium text-gray-700">使用者名稱</label>
               <input type="text" id="adminUsername" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
             </div>
             <div>
-              <label for="adminPassword" class="block text-sm font-medium text-gray-700">密码</label>
-              <input type="password" id="adminPassword" placeholder="如不修改密码，请留空" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-              <p class="mt-1 text-sm text-gray-500">留空表示不修改当前密码</p>
+              <label for="adminPassword" class="block text-sm font-medium text-gray-700">密碼</label>
+              <input type="password" id="adminPassword" placeholder="如不修改密碼，請留空" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+              <p class="mt-1 text-sm text-gray-500">留空表示不修改当前密碼</p>
             </div>
           </div>
         </div>
@@ -834,11 +834,11 @@ const configPage = `
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
                 <label for="tgBotToken" class="block text-sm font-medium text-gray-700">Bot Token</label>
-                <input type="text" id="tgBotToken" placeholder="从 @BotFather 获取" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                <input type="text" id="tgBotToken" placeholder="從 @BotFather 取得" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
               </div>
               <div>
                 <label for="tgChatId" class="block text-sm font-medium text-gray-700">Chat ID</label>
-                <input type="text" id="tgChatId" placeholder="可从 @userinfobot 获取" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                <input type="text" id="tgChatId" placeholder="可從 @userinfobot 取得" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
               </div>
             </div>
             <div class="flex justify-end">
@@ -852,8 +852,8 @@ const configPage = `
             <h4 class="text-md font-medium text-gray-900 mb-3">NotifyX 配置</h4>
             <div class="mb-4">
               <label for="notifyxApiKey" class="block text-sm font-medium text-gray-700">API Key</label>
-              <input type="text" id="notifyxApiKey" placeholder="从 NotifyX 平台获取的 API Key" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-              <p class="mt-1 text-sm text-gray-500">从 <a href="https://www.notifyx.cn/" target="_blank" class="text-indigo-600 hover:text-indigo-800">NotifyX平台</a> 获取的 API Key</p>
+              <input type="text" id="notifyxApiKey" placeholder="從 NotifyX 平台取得的 API Key" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+              <p class="mt-1 text-sm text-gray-500">從 <a href="https://www.notifyx.cn/" target="_blank" class="text-indigo-600 hover:text-indigo-800">NotifyX平台</a> 取得的 API Key</p>
             </div>
             <div class="flex justify-end">
               <button type="button" id="testNotifyXBtn" class="btn-secondary text-white px-4 py-2 rounded-md text-sm font-medium">
@@ -865,7 +865,7 @@ const configPage = `
         
         <div class="flex justify-end">
           <button type="submit" class="btn-primary text-white px-6 py-2 rounded-md text-sm font-medium">
-            <i class="fas fa-save mr-2"></i>保存配置
+            <i class="fas fa-save mr-2"></i>儲存配置
           </button>
         </div>
       </form>
@@ -911,8 +911,8 @@ const configPage = `
         
         toggleNotificationConfig(notificationType);
       } catch (error) {
-        console.error('加载配置失败:', error);
-        showToast('加载配置失败，请刷新页面重试', 'error');
+        console.error('載入配置失敗:', error);
+        showToast('載入配置失敗，請重新整理頁面重試', 'error');
       }
     }
     
@@ -957,7 +957,7 @@ const configPage = `
       
       const submitButton = e.target.querySelector('button[type="submit"]');
       const originalContent = submitButton.innerHTML;
-      submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>保存中...';
+      submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>儲存中...';
       submitButton.disabled = true;
       
       try {
@@ -970,14 +970,14 @@ const configPage = `
         const result = await response.json();
         
         if (result.success) {
-          showToast('配置保存成功', 'success');
+          showToast('配置儲存成功', 'success');
           passwordField.value = '';
         } else {
-          showToast('配置保存失败: ' + (result.message || '未知错误'), 'error');
+          showToast('配置儲存失敗: ' + (result.message || '未知錯誤'), 'error');
         }
       } catch (error) {
-        console.error('保存配置失败:', error);
-        showToast('保存配置失败，请稍后再试', 'error');
+        console.error('儲存配置失敗:', error);
+        showToast('儲存配置失敗，請稍后再试', 'error');
       } finally {
         submitButton.innerHTML = originalContent;
         submitButton.disabled = false;
@@ -998,7 +998,7 @@ const configPage = `
         config.TG_CHAT_ID = document.getElementById('tgChatId').value.trim();
         
         if (!config.TG_BOT_TOKEN || !config.TG_CHAT_ID) {
-          showToast('请先填写 Telegram Bot Token 和 Chat ID', 'warning');
+          showToast('請先填写 Telegram Bot Token 和 Chat ID', 'warning');
           button.innerHTML = originalContent;
           button.disabled = false;
           return;
@@ -1007,7 +1007,7 @@ const configPage = `
         config.NOTIFYX_API_KEY = document.getElementById('notifyxApiKey').value.trim();
         
         if (!config.NOTIFYX_API_KEY) {
-          showToast('请先填写 NotifyX API Key', 'warning');
+          showToast('請先填写 NotifyX API Key', 'warning');
           button.innerHTML = originalContent;
           button.disabled = false;
           return;
@@ -1024,13 +1024,13 @@ const configPage = `
         const result = await response.json();
         
         if (result.success) {
-          showToast(serviceName + ' 通知测试成功！', 'success');
+          showToast(serviceName + ' 通知測試成功！', 'success');
         } else {
-          showToast(serviceName + ' 通知测试失败: ' + (result.message || '未知错误'), 'error');
+          showToast(serviceName + ' 通知測試失敗: ' + (result.message || '未知錯誤'), 'error');
         }
       } catch (error) {
-        console.error('测试通知失败:', error);
-        showToast('测试失败，请稍后再试', 'error');
+        console.error('測試通知失敗:', error);
+        showToast('测试失敗，請稍后再试', 'error');
       } finally {
         button.innerHTML = originalContent;
         button.disabled = false;
@@ -1051,7 +1051,7 @@ const configPage = `
 </html>
 `;
 
-// 管理页面
+// 管理頁面
 const admin = {
   async handleRequest(request, env, ctx) {
     const url = new URL(request.url);
@@ -1080,7 +1080,7 @@ const admin = {
   }
 };
 
-// 处理API请求
+// 處理 API 請求
 const api = {
   async handleRequest(request, env, ctx) {
     const url = new URL(request.url);
@@ -1106,7 +1106,7 @@ const api = {
         );
       } else {
         return new Response(
-          JSON.stringify({ success: false, message: '用户名或密码错误' }),
+          JSON.stringify({ success: false, message: '使用者名稱或密碼錯誤' }),
           { headers: { 'Content-Type': 'application/json' } }
         );
       }
@@ -1127,7 +1127,7 @@ const api = {
     
     if (!user && path !== '/login') {
       return new Response(
-        JSON.stringify({ success: false, message: '未授权访问' }),
+        JSON.stringify({ success: false, message: '未授權存取' }),
         { status: 401, headers: { 'Content-Type': 'application/json' } }
       );
     }
@@ -1166,7 +1166,7 @@ const api = {
           );
         } catch (error) {
           return new Response(
-            JSON.stringify({ success: false, message: '更新配置失败' }),
+            JSON.stringify({ success: false, message: '更新配置失敗' }),
             { status: 400, headers: { 'Content-Type': 'application/json' } }
           );
         }
@@ -1186,21 +1186,21 @@ const api = {
             TG_CHAT_ID: body.TG_CHAT_ID
           };
           
-          const content = '*测试通知*\n\n这是一条测试通知，用于验证Telegram通知功能是否正常工作。\n\n发送时间: ' + new Date().toLocaleString();
+          const content = '*測試通知*\n\n这是一条測試通知，用於驗證Telegram通知功能是否正常工作。\n\n發送时间: ' + new Date().toLocaleString();
           success = await sendTelegramNotification(content, testConfig);
-          message = success ? 'Telegram通知发送成功' : 'Telegram通知发送失败，请检查配置';
+          message = success ? 'Telegram通知發送成功' : 'Telegram通知發送失敗，請检查配置';
         } else if (body.type === 'notifyx') {
           const testConfig = {
             ...config,
             NOTIFYX_API_KEY: body.NOTIFYX_API_KEY
           };
           
-          const title = '测试通知';
-          const content = '## 这是一条测试通知\n\n用于验证NotifyX通知功能是否正常工作。\n\n发送时间: ' + new Date().toLocaleString();
+          const title = '測試通知';
+          const content = '## 这是一条測試通知\n\n用於驗證NotifyX通知功能是否正常工作。\n\n發送时间: ' + new Date().toLocaleString();
           const description = '测试NotifyX通知功能';
           
           success = await sendNotifyXNotification(title, content, description, testConfig);
-          message = success ? 'NotifyX通知发送成功' : 'NotifyX通知发送失败，请检查配置';
+          message = success ? 'NotifyX通知發送成功' : 'NotifyX通知發送失敗，請检查配置';
         }
         
         return new Response(
@@ -1208,9 +1208,9 @@ const api = {
           { headers: { 'Content-Type': 'application/json' } }
         );
       } catch (error) {
-        console.error('测试通知失败:', error);
+        console.error('測試通知失敗:', error);
         return new Response(
-          JSON.stringify({ success: false, message: '测试通知失败: ' + error.message }),
+          JSON.stringify({ success: false, message: '測試通知失敗: ' + error.message }),
           { status: 500, headers: { 'Content-Type': 'application/json' } }
         );
       }
@@ -1292,13 +1292,13 @@ const api = {
     }
     
     return new Response(
-      JSON.stringify({ success: false, message: '未找到请求的资源' }),
+      JSON.stringify({ success: false, message: '未找到請求的资源' }),
       { status: 404, headers: { 'Content-Type': 'application/json' } }
     );
   }
 };
 
-// 工具函数
+// 工具函數
 async function getConfig(env) {
   try {
     const data = await env.SUBSCRIPTIONS_KV.get('config');
@@ -1376,7 +1376,7 @@ async function createSubscription(subscription, env) {
     const subscriptions = await getAllSubscriptions(env);
     
     if (!subscription.name || !subscription.expiryDate) {
-      return { success: false, message: '缺少必填字段' };
+      return { success: false, message: '缺少必填欄位' };
     }
     
     let expiryDate = new Date(subscription.expiryDate);
@@ -1416,7 +1416,7 @@ async function createSubscription(subscription, env) {
     
     return { success: true, subscription: newSubscription };
   } catch (error) {
-    return { success: false, message: '创建订阅失败' };
+    return { success: false, message: '建立訂閱失敗' };
   }
 }
 
@@ -1426,11 +1426,11 @@ async function updateSubscription(id, subscription, env) {
     const index = subscriptions.findIndex(s => s.id === id);
     
     if (index === -1) {
-      return { success: false, message: '订阅不存在' };
+      return { success: false, message: '訂閱不存在' };
     }
     
     if (!subscription.name || !subscription.expiryDate) {
-      return { success: false, message: '缺少必填字段' };
+      return { success: false, message: '缺少必填欄位' };
     }
     
     let expiryDate = new Date(subscription.expiryDate);
@@ -1468,7 +1468,7 @@ async function updateSubscription(id, subscription, env) {
     
     return { success: true, subscription: subscriptions[index] };
   } catch (error) {
-    return { success: false, message: '更新订阅失败' };
+    return { success: false, message: '更新訂閱失敗' };
   }
 }
 
@@ -1478,14 +1478,14 @@ async function deleteSubscription(id, env) {
     const filteredSubscriptions = subscriptions.filter(s => s.id !== id);
     
     if (filteredSubscriptions.length === subscriptions.length) {
-      return { success: false, message: '订阅不存在' };
+      return { success: false, message: '訂閱不存在' };
     }
     
     await env.SUBSCRIPTIONS_KV.put('subscriptions', JSON.stringify(filteredSubscriptions));
     
     return { success: true };
   } catch (error) {
-    return { success: false, message: '删除订阅失败' };
+    return { success: false, message: '刪除訂閱失敗' };
   }
 }
 
@@ -1495,7 +1495,7 @@ async function toggleSubscriptionStatus(id, isActive, env) {
     const index = subscriptions.findIndex(s => s.id === id);
     
     if (index === -1) {
-      return { success: false, message: '订阅不存在' };
+      return { success: false, message: '訂閱不存在' };
     }
     
     subscriptions[index] = {
@@ -1508,7 +1508,7 @@ async function toggleSubscriptionStatus(id, isActive, env) {
     
     return { success: true, subscription: subscriptions[index] };
   } catch (error) {
-    return { success: false, message: '更新订阅状态失败' };
+    return { success: false, message: '更新訂閱狀態失敗' };
   }
 }
 
@@ -1519,7 +1519,7 @@ async function sendTelegramNotification(message, config) {
       return false;
     }
     
-    console.log('[Telegram] 开始发送通知到 Chat ID: ' + config.TG_CHAT_ID);
+    console.log('[Telegram] 开始發送通知到 Chat ID: ' + config.TG_CHAT_ID);
     
     const url = 'https://api.telegram.org/bot' + config.TG_BOT_TOKEN + '/sendMessage';
     const response = await fetch(url, {
@@ -1533,10 +1533,10 @@ async function sendTelegramNotification(message, config) {
     });
     
     const result = await response.json();
-    console.log('[Telegram] 发送结果:', result);
+    console.log('[Telegram] 發送结果:', result);
     return result.ok;
   } catch (error) {
-    console.error('[Telegram] 发送通知失败:', error);
+    console.error('[Telegram] 發送通知失敗:', error);
     return false;
   }
 }
@@ -1548,7 +1548,7 @@ async function sendNotifyXNotification(title, content, description, config) {
       return false;
     }
     
-    console.log('[NotifyX] 开始发送通知: ' + title);
+    console.log('[NotifyX] 开始發送通知: ' + title);
     
     const url = 'https://www.notifyx.cn/api/v1/send/' + config.NOTIFYX_API_KEY;
     const response = await fetch(url, {
@@ -1562,10 +1562,10 @@ async function sendNotifyXNotification(title, content, description, config) {
     });
     
     const result = await response.json();
-    console.log('[NotifyX] 发送结果:', result);
+    console.log('[NotifyX] 發送结果:', result);
     return result.status === 'queued';
   } catch (error) {
-    console.error('[NotifyX] 发送通知失败:', error);
+    console.error('[NotifyX] 發送通知失敗:', error);
     return false;
   }
 }
@@ -1578,13 +1578,13 @@ async function sendNotification(title, content, description, config) {
   }
 }
 
-// 定时检查即将到期的订阅 - 完全优化版
+// 定時檢查即將到期的訂閱 - 完全优化版
 async function checkExpiringSubscriptions(env) {
   try {
-    console.log('[定时任务] 开始检查即将到期的订阅: ' + new Date().toISOString());
+    console.log('[定时任务] 开始检查即將到期的訂閱: ' + new Date().toISOString());
     
     const subscriptions = await getAllSubscriptions(env);
-    console.log('[定时任务] 共找到 ' + subscriptions.length + ' 个订阅');
+    console.log('[定时任务] 共找到 ' + subscriptions.length + ' 個訂閱');
     
     const config = await getConfig(env);
     const now = new Date();
@@ -1594,30 +1594,30 @@ async function checkExpiringSubscriptions(env) {
     
     for (const subscription of subscriptions) {
       if (subscription.isActive === false) {
-        console.log('[定时任务] 订阅 "' + subscription.name + '" 已停用，跳过');
+        console.log('[定时任务] 訂閱 "' + subscription.name + '" 已停用，跳过');
         continue;
       }
       
       const expiryDate = new Date(subscription.expiryDate);
       const daysDiff = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
       
-      console.log('[定时任务] 订阅 "' + subscription.name + '" 到期日期: ' + expiryDate.toISOString() + ', 剩余天数: ' + daysDiff);
+      console.log('[定时任务] 訂閱 "' + subscription.name + '" 到期日期: ' + expiryDate.toISOString() + ', 剩余天数: ' + daysDiff);
       
-      // 修复提前提醒天数逻辑
+      // 修复提前提醒天數逻辑
       const reminderDays = subscription.reminderDays !== undefined ? subscription.reminderDays : 7;
       let shouldRemind = false;
       
       if (reminderDays === 0) {
-        // 当提前提醒天数为0时，只在到期日当天提醒
+        // 当提前提醒天數为0时，只在到期日当天提醒
         shouldRemind = daysDiff === 0;
       } else {
-        // 当提前提醒天数大于0时，在指定范围内提醒
+        // 当提前提醒天數大于0时，在指定范围内提醒
         shouldRemind = daysDiff >= 0 && daysDiff <= reminderDays;
       }
       
-      // 如果已过期，且设置了周期和自动续订，则自动更新到下一个周期
+      // 如果已過期，且设置了周期和自动续订，则自动更新到下一個周期
       if (daysDiff < 0 && subscription.periodValue && subscription.periodUnit && subscription.autoRenew !== false) {
-        console.log('[定时任务] 订阅 "' + subscription.name + '" 已过期且启用自动续订，正在更新到下一个周期');
+        console.log('[定时任务] 訂閱 "' + subscription.name + '" 已過期且啟用自动续订，正在更新到下一個周期');
         
         const newExpiryDate = new Date(expiryDate);
         
@@ -1630,7 +1630,7 @@ async function checkExpiringSubscriptions(env) {
         }
         
         while (newExpiryDate < now) {
-          console.log('[定时任务] 新计算的到期日期 ' + newExpiryDate.toISOString() + ' 仍然过期，继续计算下一个周期');
+          console.log('[定时任务] 新计算的到期日期 ' + newExpiryDate.toISOString() + ' 仍然过期，继续计算下一個周期');
           
           if (subscription.periodUnit === 'day') {
             newExpiryDate.setDate(newExpiryDate.getDate() + subscription.periodValue);
@@ -1641,7 +1641,7 @@ async function checkExpiringSubscriptions(env) {
           }
         }
         
-        console.log('[定时任务] 订阅 "' + subscription.name + '" 更新到期日期: ' + newExpiryDate.toISOString());
+        console.log('[定时任务] 訂閱 "' + subscription.name + '" 更新到期日期: ' + newExpiryDate.toISOString());
         
         const updatedSubscription = { ...subscription, expiryDate: newExpiryDate.toISOString() };
         updatedSubscriptions.push(updatedSubscription);
@@ -1657,20 +1657,20 @@ async function checkExpiringSubscriptions(env) {
         }
         
         if (shouldRemindAfterRenewal) {
-          console.log('[定时任务] 订阅 "' + subscription.name + '" 在提醒范围内，将发送通知');
+          console.log('[定时任务] 訂閱 "' + subscription.name + '" 在提醒范围内，将發送通知');
           expiringSubscriptions.push({
             ...updatedSubscription,
             daysRemaining: newDaysDiff
           });
         }
       } else if (daysDiff < 0 && subscription.autoRenew === false) {
-        console.log('[定时任务] 订阅 "' + subscription.name + '" 已过期且未启用自动续订，将发送过期通知');
+        console.log('[定时任务] 訂閱 "' + subscription.name + '" 已過期且未啟用自动续订，将發送过期通知');
         expiringSubscriptions.push({
           ...subscription,
           daysRemaining: daysDiff
         });
       } else if (shouldRemind) {
-        console.log('[定时任务] 订阅 "' + subscription.name + '" 在提醒范围内，将发送通知');
+        console.log('[定时任务] 訂閱 "' + subscription.name + '" 在提醒范围内，将發送通知');
         expiringSubscriptions.push({
           ...subscription,
           daysRemaining: daysDiff
@@ -1679,7 +1679,7 @@ async function checkExpiringSubscriptions(env) {
     }
     
     if (hasUpdates) {
-      console.log('[定时任务] 有 ' + updatedSubscriptions.length + ' 个订阅需要更新到下一个周期');
+      console.log('[定时任务] 有 ' + updatedSubscriptions.length + ' 個訂閱需要更新到下一個周期');
       
       const mergedSubscriptions = subscriptions.map(sub => {
         const updated = updatedSubscriptions.find(u => u.id === sub.id);
@@ -1687,18 +1687,18 @@ async function checkExpiringSubscriptions(env) {
       });
       
       await env.SUBSCRIPTIONS_KV.put('subscriptions', JSON.stringify(mergedSubscriptions));
-      console.log('[定时任务] 已更新订阅列表');
+      console.log('[定时任务] 已更新訂閱清單');
     }
     
     if (expiringSubscriptions.length > 0) {
-      console.log('[定时任务] 有 ' + expiringSubscriptions.length + ' 个订阅需要发送通知');
+      console.log('[定时任务] 有 ' + expiringSubscriptions.length + ' 個訂閱需要發送通知');
       
-      let title = '订阅到期提醒';
+      let title = '訂閱到期提醒';
       let content = '';
-      let description = '共有 ' + expiringSubscriptions.length + ' 个订阅即将到期';
+      let description = '共有 ' + expiringSubscriptions.length + ' 個訂閱即將到期';
       
       if (config.NOTIFICATION_TYPE === 'notifyx') {
-        content = '## 订阅到期提醒\n\n';
+        content = '## 訂閱到期提醒\n\n';
         
         for (const subscription of expiringSubscriptions) {
           const typeText = subscription.customType || '其他';
@@ -1712,22 +1712,22 @@ async function checkExpiringSubscriptions(env) {
           if (subscription.daysRemaining === 0) {
             content += '⚠️ **' + subscription.name + '** (' + typeText + ') ' + periodText + ' 今天到期！\n';
           } else if (subscription.daysRemaining < 0) {
-            content += '🚨 **' + subscription.name + '** (' + typeText + ') ' + periodText + ' 已过期 ' + Math.abs(subscription.daysRemaining) + ' 天\n';
+            content += '🚨 **' + subscription.name + '** (' + typeText + ') ' + periodText + ' 已過期 ' + Math.abs(subscription.daysRemaining) + ' 天\n';
           } else {
             content += '📅 **' + subscription.name + '** (' + typeText + ') ' + periodText + ' 将在 ' + subscription.daysRemaining + ' 天后到期\n';
           }
           
           if (subscription.notes) {
-            content += '备注: ' + subscription.notes + '\n';
+            content += '備註: ' + subscription.notes + '\n';
           }
           
           content += '\n';
         }
         
         const success = await sendNotifyXNotification(title, content, description, config);
-        console.log('[定时任务] 发送NotifyX通知 ' + (success ? '成功' : '失败'));
+        console.log('[定时任务] 發送NotifyX通知 ' + (success ? '成功' : '失敗'));
       } else {
-        content = '*订阅到期提醒*\n\n';
+        content = '*訂閱到期提醒*\n\n';
         
         for (const subscription of expiringSubscriptions) {
           const typeText = subscription.customType || '其他';
@@ -1741,28 +1741,28 @@ async function checkExpiringSubscriptions(env) {
           if (subscription.daysRemaining === 0) {
             content += '⚠️ *' + subscription.name + '* (' + typeText + ') ' + periodText + ' 今天到期！\n';
           } else if (subscription.daysRemaining < 0) {
-            content += '🚨 *' + subscription.name + '* (' + typeText + ') ' + periodText + ' 已过期 ' + Math.abs(subscription.daysRemaining) + ' 天\n';
+            content += '🚨 *' + subscription.name + '* (' + typeText + ') ' + periodText + ' 已過期 ' + Math.abs(subscription.daysRemaining) + ' 天\n';
           } else {
             content += '📅 *' + subscription.name + '* (' + typeText + ') ' + periodText + ' 将在 ' + subscription.daysRemaining + ' 天后到期\n';
           }
           
           if (subscription.notes) {
-            content += '备注: ' + subscription.notes + '\n';
+            content += '備註: ' + subscription.notes + '\n';
           }
           
           content += '\n';
         }
         
         const success = await sendTelegramNotification(content, config);
-        console.log('[定时任务] 发送Telegram通知 ' + (success ? '成功' : '失败'));
+        console.log('[定时任务] 發送Telegram通知 ' + (success ? '成功' : '失敗'));
       }
     } else {
-      console.log('[定时任务] 没有需要提醒的订阅');
+      console.log('[定时任务] 沒有需要提醒的訂閱');
     }
     
     console.log('[定时任务] 检查完成');
   } catch (error) {
-    console.error('[定时任务] 检查即将到期的订阅失败:', error);
+    console.error('[定时任务] 检查即將到期的訂閱失敗:', error);
   }
 }
 
