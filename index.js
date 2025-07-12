@@ -593,11 +593,11 @@ const adminPage = `
           loadSubscriptions();
         } else {
           const error = await response.json();
-          alert('保存失败: ' + (error.message || '未知错误'));
+          alert('儲存失敗: ' + (error.message || '未知錯誤'));
         }
       } catch (error) {
-        console.error('保存订阅失败:', error);
-        alert('保存失败，请稍后再试');
+        console.error('儲存訂閱失敗:', error);
+        alert('儲存失敗，請稍後再試');
       } finally {
         // 恢复按钮状态
         button.innerHTML = originalContent;
@@ -807,7 +807,7 @@ const adminPage = `
           loadSubscriptions();
         } else {
           return response.json().then(error => {
-            throw new Error(error.message || '未知错误');
+            throw new Error(error.message || '未知錯誤');
           });
         }
       })
@@ -1376,7 +1376,7 @@ const api = {
           );
         } else {
           return new Response(
-            JSON.stringify({ message: '订阅不存在' }),
+            JSON.stringify({ message: '訂閱不存在' }),
             { status: 404, headers: { 'Content-Type': 'application/json' } }
           );
         }
@@ -1432,7 +1432,7 @@ const api = {
     
     // 如果没有匹配的路由
     return new Response(
-      JSON.stringify({ message: '接口不存在' }),
+      JSON.stringify({ message: '介面不存在' }),
       { status: 404, headers: { 'Content-Type': 'application/json' } }
     );
   }
@@ -1538,9 +1538,9 @@ async function createSubscription(subscription, env) {
   try {
     const subscriptions = await getAllSubscriptions(env);
     
-    // 验证必填字段
+    // 驗證必填欄位
     if (!subscription.name || !subscription.expiryDate) {
-      return { success: false, message: '缺少必填字段' };
+      return { success: false, message: '缺少必填欄位' };
     }
     
     // 确保到期日期是未来的日期
@@ -1581,7 +1581,7 @@ async function createSubscription(subscription, env) {
     
     return { success: true, subscription: newSubscription };
   } catch (error) {
-    return { success: false, message: '创建订阅失败' };
+    return { success: false, message: '建立訂閱失敗' };
   }
 }
 
@@ -1591,12 +1591,12 @@ async function updateSubscription(id, subscription, env) {
     const index = subscriptions.findIndex(s => s.id === id);
     
     if (index === -1) {
-      return { success: false, message: '订阅不存在' };
+      return { success: false, message: '訂閱不存在' };
     }
     
-    // 验证必填字段
+    // 驗證必填欄位
     if (!subscription.name || !subscription.expiryDate) {
-      return { success: false, message: '缺少必填字段' };
+      return { success: false, message: '缺少必填欄位' };
     }
     
     // 确保到期日期是未来的日期
@@ -1635,7 +1635,7 @@ async function updateSubscription(id, subscription, env) {
     
     return { success: true, subscription: subscriptions[index] };
   } catch (error) {
-    return { success: false, message: '更新订阅失败' };
+    return { success: false, message: '更新訂閱失敗' };
   }
 }
 
@@ -1652,7 +1652,7 @@ async function deleteSubscription(id, env) {
     
     return { success: true };
   } catch (error) {
-    return { success: false, message: '删除订阅失败' };
+    return { success: false, message: '刪除訂閱失敗' };
   }
 }
 
@@ -1675,7 +1675,7 @@ async function toggleSubscriptionStatus(id, isActive, env) {
     
     return { success: true, subscription: subscriptions[index] };
   } catch (error) {
-    return { success: false, message: '更新订阅状态失败' };
+    return { success: false, message: '更新訂閱狀態失敗' };
   }
 }
 
@@ -1684,7 +1684,7 @@ async function sendTelegramNotification(message, config) {
   try {
     // 检查是否配置了Telegram通知
     if (!config.TG_BOT_TOKEN || !config.TG_CHAT_ID) {
-      console.error('[Telegram] 通知未配置，缺少Bot Token或Chat ID');
+      console.error('[Telegram] 通知未設定，缺少 Bot Token 或 Chat ID');
       return false;
     }
     
@@ -1705,18 +1705,18 @@ async function sendTelegramNotification(message, config) {
     console.log(`[Telegram] 发送结果:`, result);
     return result.ok;
   } catch (error) {
-    console.error('[Telegram] 发送通知失败:', error);
+    console.error('[Telegram] 發送通知失敗:', error);
     return false;
   }
 }
 
-// 定时检查即将到期的订阅 - 更新以支持isActive字段
+// 定時檢查即將到期的訂閱 - 更新以支援 isActive 欄位
 async function checkExpiringSubscriptions(env) {
   try {
-    console.log('[定时任务] 开始检查即将到期的订阅: ' + new Date().toISOString());
+    console.log('[定時任務] 開始檢查即將到期的訂閱: ' + new Date().toISOString());
     
     const subscriptions = await getAllSubscriptions(env);
-    console.log(`[定时任务] 共找到 ${subscriptions.length} 个订阅`);
+    console.log(`[定時任務] 共找到 ${subscriptions.length} 個訂閱`);
     
     const config = await getConfig(env);
     const now = new Date();
@@ -1725,9 +1725,9 @@ async function checkExpiringSubscriptions(env) {
     let hasUpdates = false;
     
     for (const subscription of subscriptions) {
-      // 跳过已停用的订阅
+      // 跳過已停用的訂閱
       if (subscription.isActive === false) {
-        console.log(`[定时任务] 订阅 "${subscription.name}" 已停用，跳过`);
+        console.log(`[定時任務] 訂閱 "${subscription.name}" 已停用，跳過`);
         continue;
       }
       
@@ -1909,7 +1909,7 @@ export default {
   },
   
   async scheduled(event, env, ctx) {
-    // 每天定时检查即将到期的订阅
+    // 每天定時檢查即將到期的訂閱
     console.log('[Workers] 定时任务触发时间:', new Date().toISOString());
     await checkExpiringSubscriptions(env);
   }
