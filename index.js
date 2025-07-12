@@ -213,6 +213,7 @@ const adminPage = `
           <tr>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">名稱</th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">類型</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">金額</th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">到期時間</th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">提醒時間</th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">狀態</th>
@@ -294,7 +295,7 @@ const adminPage = `
       try {
         // 顯示載入狀態
         const tbody = document.getElementById('subscriptionsBody');
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>載入中...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>載入中...</td></tr>';
         
         const response = await fetch('/api/subscriptions');
         const data = await response.json();
@@ -302,7 +303,7 @@ const adminPage = `
         tbody.innerHTML = '';
         
         if (data.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">沒有訂閱資料</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-500">沒有訂閱資料</td></tr>';
           return;
         }
         
@@ -332,6 +333,13 @@ const adminPage = `
             periodText = subscription.periodValue + ' ' + (unitMap[subscription.periodUnit] || subscription.periodUnit);
           }
           
+          // 金額資訊
+          let amountText = '';
+          if (subscription.amount && subscription.amount > 0) {
+            const currencyMap = { 'TWD': '台幣', 'USD': '美元', 'JPY': '日幣', 'EUR': '歐元' };
+            amountText = '$' + subscription.amount + ' ' + (currencyMap[subscription.currency] || subscription.currency);
+          }
+          
           // 使用字串拼接而不是模板字串來避免 JSX 解析問題
           row.innerHTML = 
             '<td class="px-6 py-4 whitespace-nowrap">' + 
@@ -343,6 +351,11 @@ const adminPage = `
                 '<i class="fas fa-tag mr-1"></i>' + (subscription.customType || '其他') + 
               '</div>' +
               (periodText ? '<div class="text-xs text-gray-500">週期: ' + periodText + '</div>' : '') +
+            '</td>' +
+            '<td class="px-6 py-4 whitespace-nowrap">' + 
+              '<div class="text-sm text-gray-900">' + 
+                (amountText ? '<i class="fas fa-coins mr-1"></i>' + amountText : '<span class="text-gray-400">未設定</span>') + 
+              '</div>' +
             '</td>' +
             '<td class="px-6 py-4 whitespace-nowrap">' + 
               '<div class="text-sm text-gray-900">' + new Date(subscription.expiryDate).toLocaleDateString() + '</div>' +
@@ -379,7 +392,7 @@ const adminPage = `
       } catch (error) {
         console.error('載入訂閱失敗:', error);
         const tbody = document.getElementById('subscriptionsBody');
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-red-500"><i class="fas fa-exclamation-circle mr-2"></i>載入失敗，請重新整理頁面重試</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-red-500"><i class="fas fa-exclamation-circle mr-2"></i>載入失敗，請重新整理頁面重試</td></tr>';
       }
     }
     
@@ -445,6 +458,24 @@ const adminPage = `
             '<div>' +
               '<label for="customType" class="block text-sm font-medium text-gray-700">類型</label>' +
               '<input type="text" id="customType" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">' +
+            '</div>' +
+          '</div>' +
+          
+          '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">' +
+            '<div>' +
+              '<label for="amount" class="block text-sm font-medium text-gray-700">金額（選填）</label>' +
+              '<input type="number" id="amount" min="0" step="0.01" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="例如：199">' +
+              '<div id="amountError" class="text-red-500 text-xs mt-1 hidden">請輸入有效的數字</div>' +
+            '</div>' +
+            
+            '<div>' +
+              '<label for="currency" class="block text-sm font-medium text-gray-700">幣別</label>' +
+              '<select id="currency" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">' +
+                '<option value="TWD" selected>台幣</option>' +
+                '<option value="USD">美元</option>' +
+                '<option value="JPY">日幣</option>' +
+                '<option value="EUR">歐元</option>' +
+              '</select>' +
             '</div>' +
           '</div>' +
           
@@ -525,6 +556,21 @@ const adminPage = `
       document.getElementById('periodValue').addEventListener('change', calculateExpiryDate);
       document.getElementById('periodUnit').addEventListener('change', calculateExpiryDate);
       
+      // 添加金額驗證
+      document.getElementById('amount').addEventListener('input', function() {
+        const amountField = this;
+        const errorDiv = document.getElementById('amountError');
+        const value = amountField.value;
+        
+        if (value && (isNaN(value) || parseFloat(value) < 0)) {
+          amountField.classList.add('border-red-500');
+          errorDiv.classList.remove('hidden');
+        } else {
+          amountField.classList.remove('border-red-500');
+          errorDiv.classList.add('hidden');
+        }
+      });
+      
       // 添加提交事件监听器
       document.getElementById('subscriptionForm').addEventListener('submit', submitHandler);
     });
@@ -563,6 +609,8 @@ const adminPage = `
       const subscription = {
         name: document.getElementById('name').value,
         customType: document.getElementById('customType').value,
+        amount: document.getElementById('amount').value ? parseFloat(document.getElementById('amount').value) : null,
+        currency: document.getElementById('currency').value,
         notes: document.getElementById('notes').value || '',
         isActive: document.getElementById('isActive').checked,
         startDate: document.getElementById('startDate').value,
@@ -637,6 +685,24 @@ const adminPage = `
               '</div>' +
             '</div>' +
             
+            '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">' +
+              '<div>' +
+                '<label for="amount" class="block text-sm font-medium text-gray-700">金額（選填）</label>' +
+                '<input type="number" id="amount" min="0" step="0.01" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="例如：199">' +
+                '<div id="amountError" class="text-red-500 text-xs mt-1 hidden">請輸入有效的數字</div>' +
+              '</div>' +
+              
+              '<div>' +
+                '<label for="currency" class="block text-sm font-medium text-gray-700">幣別</label>' +
+                '<select id="currency" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">' +
+                  '<option value="TWD">台幣</option>' +
+                  '<option value="USD">美元</option>' +
+                  '<option value="JPY">日幣</option>' +
+                  '<option value="EUR">歐元</option>' +
+                '</select>' +
+              '</div>' +
+            '</div>' +
+            
             '<div>' +
               '<label for="notes" class="block text-sm font-medium text-gray-700">备注</label>' +
               '<textarea id="notes" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>' +
@@ -706,6 +772,10 @@ const adminPage = `
         // 修复类型回显，优先显示自定义类型，如果没有则显示旧的类型字段
         document.getElementById('customType').value = subscription.customType || subscription.type || '';
         
+        // 设置金额和幣別
+        document.getElementById('amount').value = subscription.amount || '';
+        document.getElementById('currency').value = subscription.currency || 'TWD';
+        
         document.getElementById('notes').value = subscription.notes || '';
         document.getElementById('isActive').checked = subscription.isActive !== false; // 默认为true
         
@@ -723,6 +793,21 @@ const adminPage = `
         document.getElementById('startDate').addEventListener('change', calculateExpiryDate);
         document.getElementById('periodValue').addEventListener('change', calculateExpiryDate);
         document.getElementById('periodUnit').addEventListener('change', calculateExpiryDate);
+        
+        // 添加金額驗證
+        document.getElementById('amount').addEventListener('input', function() {
+          const amountField = this;
+          const errorDiv = document.getElementById('amountError');
+          const value = amountField.value;
+          
+          if (value && (isNaN(value) || parseFloat(value) < 0)) {
+            amountField.classList.add('border-red-500');
+            errorDiv.classList.remove('hidden');
+          } else {
+            amountField.classList.remove('border-red-500');
+            errorDiv.classList.add('hidden');
+          }
+        });
         
         // 重新添加提交事件监听器
         document.getElementById('subscriptionForm').addEventListener('submit', submitHandler);
@@ -778,6 +863,8 @@ const adminPage = `
       const subscription = {
         name: document.getElementById('name').value,
         customType: document.getElementById('customType').value,
+        amount: document.getElementById('amount').value ? parseFloat(document.getElementById('amount').value) : null,
+        currency: document.getElementById('currency').value,
         notes: document.getElementById('notes').value || '',
         isActive: document.getElementById('isActive').checked,
         startDate: document.getElementById('startDate').value,
@@ -1565,6 +1652,8 @@ async function createSubscription(subscription, env) {
       id: Date.now().toString(),
       name: subscription.name,
       customType: subscription.customType || '',
+      amount: subscription.amount || null,
+      currency: subscription.currency || 'TWD',
       startDate: subscription.startDate || null,
       expiryDate: subscription.expiryDate,
       periodValue: subscription.periodValue || 1,
@@ -1621,6 +1710,8 @@ async function updateSubscription(id, subscription, env) {
       ...subscriptions[index],
       name: subscription.name,
       customType: subscription.customType || subscriptions[index].customType || '',
+      amount: subscription.amount !== undefined ? subscription.amount : subscriptions[index].amount,
+      currency: subscription.currency || subscriptions[index].currency || 'TWD',
       startDate: subscription.startDate || subscriptions[index].startDate,
       expiryDate: subscription.expiryDate,
       periodValue: subscription.periodValue || subscriptions[index].periodValue || 1,
@@ -1823,14 +1914,27 @@ async function checkExpiringSubscriptions(env) {
           periodText = `(周期: ${subscription.periodValue} ${unitMap[subscription.periodUnit] || subscription.periodUnit})`;
         }
         
-        if (subscription.daysRemaining === 0) {
-          message += `⚠️ *${subscription.name}* (${typeText}) ${periodText} 今天到期！\n`;
-        } else {
-          message += `📅 *${subscription.name}* (${typeText}) ${periodText} 将在 ${subscription.daysRemaining} 天后到期\n`;
+        // 金額資訊
+        let amountText = '';
+        if (subscription.amount && subscription.amount > 0) {
+          const currencyMap = { 'TWD': '台幣', 'USD': '美元', 'JPY': '日幣', 'EUR': '歐元' };
+          amountText = `$${subscription.amount} ${currencyMap[subscription.currency] || subscription.currency}`;
         }
         
+        message += `訂閱詳情:\n`;
+        message += `- 類型: ${typeText}\n`;
+        message += `- 到期日: ${new Date(subscription.expiryDate).toLocaleDateString()}\n`;
+        if (amountText) {
+          message += `- 金額: ${amountText}\n`;
+        }
         if (subscription.notes) {
-          message += `备注: ${subscription.notes}\n`;
+          message += `- 備註: ${subscription.notes}\n`;
+        }
+        
+        if (subscription.daysRemaining === 0) {
+          message += `\n⚠️ *${subscription.name}* 今天到期！\n`;
+        } else {
+          message += `\n📅 *${subscription.name}* 將在 ${subscription.daysRemaining} 天後到期\n`;
         }
         
         message += '\n';
