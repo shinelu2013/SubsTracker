@@ -1,4 +1,4 @@
-// 订阅续期通知网站 - 基于CloudFlare Workers
+// 訂閱續期通知網站 - 基於 CloudFlare Workers
 
 // 定义HTML模板
 const loginPage = `
@@ -41,14 +41,14 @@ const loginPage = `
 <body class="login-container flex items-center justify-center">
   <div class="login-box p-8 rounded-xl w-full max-w-md">
     <div class="text-center mb-8">
-      <h1 class="text-2xl font-bold text-gray-800"><i class="fas fa-calendar-check mr-2"></i>订阅管理系统</h1>
-      <p class="text-gray-600 mt-2">登录管理您的订阅提醒</p>
+      <h1 class="text-2xl font-bold text-gray-800"><i class="fas fa-calendar-check mr-2"></i>訂閱管理系統</h1>
+      <p class="text-gray-600 mt-2">登入管理您的訂閱提醒</p>
     </div>
     
     <form id="loginForm" class="space-y-6">
       <div>
         <label for="username" class="block text-sm font-medium text-gray-700 mb-1">
-          <i class="fas fa-user mr-2"></i>用户名
+          <i class="fas fa-user mr-2"></i>使用者名稱
         </label>
         <input type="text" id="username" name="username" required
           class="input-field w-full px-4 py-3 rounded-lg text-gray-700 focus:outline-none">
@@ -56,7 +56,7 @@ const loginPage = `
       
       <div>
         <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
-          <i class="fas fa-lock mr-2"></i>密码
+          <i class="fas fa-lock mr-2"></i>密碼
         </label>
         <input type="password" id="password" name="password" required
           class="input-field w-full px-4 py-3 rounded-lg text-gray-700 focus:outline-none">
@@ -64,7 +64,7 @@ const loginPage = `
       
       <button type="submit" 
         class="btn-primary w-full py-3 rounded-lg text-white font-medium focus:outline-none">
-        <i class="fas fa-sign-in-alt mr-2"></i>登录
+        <i class="fas fa-sign-in-alt mr-2"></i>登入
       </button>
       
       <div id="errorMsg" class="text-red-500 text-center"></div>
@@ -77,10 +77,10 @@ const loginPage = `
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
       
-      // 显示加载状态
+      // 顯示載入狀態
       const button = e.target.querySelector('button');
       const originalContent = button.innerHTML;
-      button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>登录中...';
+      button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>登入中...';
       button.disabled = true;
       
       try {
@@ -95,14 +95,14 @@ const loginPage = `
         if (result.success) {
           window.location.href = '/admin';
         } else {
-          document.getElementById('errorMsg').textContent = result.message || '用户名或密码错误';
-          // 恢复按钮状态
+          document.getElementById('errorMsg').textContent = result.message || '使用者名稱或密碼錯誤';
+          // 恢復按鈕狀態
           button.innerHTML = originalContent;
           button.disabled = false;
         }
       } catch (error) {
-        document.getElementById('errorMsg').textContent = '发生错误，请稍后再试';
-        // 恢复按钮状态
+        document.getElementById('errorMsg').textContent = '發生錯誤，請稍後再試';
+        // 恢復按鈕狀態
         button.innerHTML = originalContent;
         button.disabled = false;
       }
@@ -177,17 +177,17 @@ const adminPage = `
       <div class="flex justify-between h-16">
         <div class="flex items-center">
           <i class="fas fa-calendar-check text-indigo-600 text-2xl mr-2"></i>
-          <span class="font-bold text-xl text-gray-800">订阅管理系统</span>
+          <span class="font-bold text-xl text-gray-800">訂閱管理系統</span>
         </div>
         <div class="flex items-center space-x-4">
           <a href="/admin" class="text-indigo-600 border-b-2 border-indigo-600 px-3 py-2 rounded-md text-sm font-medium">
-            <i class="fas fa-list mr-1"></i>订阅列表
+            <i class="fas fa-list mr-1"></i>訂閱清單
           </a>
           <a href="/admin/config" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-            <i class="fas fa-cog mr-1"></i>系统配置
+            <i class="fas fa-cog mr-1"></i>系統設定
           </a>
           <a href="/api/logout" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-            <i class="fas fa-sign-out-alt mr-1"></i>退出登录
+            <i class="fas fa-sign-out-alt mr-1"></i>登出
           </a>
         </div>
       </div>
@@ -196,13 +196,13 @@ const adminPage = `
   
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="flex justify-between items-center mb-6">
-      <h2 class="text-2xl font-bold text-gray-800">订阅列表</h2>
+      <h2 class="text-2xl font-bold text-gray-800">訂閱清單</h2>
       <div class="flex space-x-2">
         <button id="testNotificationBtn" class="btn-warning text-white px-4 py-2 rounded-md text-sm font-medium flex items-center">
-          <i class="fas fa-bell mr-2"></i>测试通知
+          <i class="fas fa-bell mr-2"></i>測試通知
         </button>
         <button id="addSubscriptionBtn" class="btn-primary text-white px-4 py-2 rounded-md text-sm font-medium flex items-center">
-          <i class="fas fa-plus mr-2"></i>添加新订阅
+          <i class="fas fa-plus mr-2"></i>新增訂閱
         </button>
       </div>
     </div>
@@ -211,16 +211,16 @@ const adminPage = `
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">名称</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">类型</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">到期时间</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">提醒时间</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">名稱</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">類型</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">到期時間</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">提醒時間</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">狀態</th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
           </tr>
         </thead>
         <tbody id="subscriptionsBody" class="bg-white divide-y divide-gray-200">
-          <!-- 数据将通过JavaScript填充 -->
+          <!-- 資料將透過 JavaScript 填充 -->
         </tbody>
       </table>
     </div>
@@ -231,7 +231,7 @@ const adminPage = `
     <div class="bg-white rounded-lg max-w-md w-full mx-4">
       <div class="p-6">
         <div class="flex justify-between items-center mb-4">
-          <h3 id="modalTitle" class="text-lg font-medium text-gray-900">添加新订阅</h3>
+          <h3 id="modalTitle" class="text-lg font-medium text-gray-900">新增訂閱</h3>
           <button id="closeModal" class="text-gray-400 hover:text-gray-500">
             <i class="fas fa-times"></i>
           </button>
@@ -241,24 +241,24 @@ const adminPage = `
           <input type="hidden" id="subscriptionId">
           
           <div>
-            <label for="name" class="block text-sm font-medium text-gray-700">名称</label>
+            <label for="name" class="block text-sm font-medium text-gray-700">名稱</label>
             <input type="text" id="name" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
           </div>
           
           <div>
-            <label for="customType" class="block text-sm font-medium text-gray-700">类型</label>
+            <label for="customType" class="block text-sm font-medium text-gray-700">類型</label>
             <input type="text" id="customType" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
           </div>
           
           <div>
-            <label for="notes" class="block text-sm font-medium text-gray-700">备注</label>
+            <label for="notes" class="block text-sm font-medium text-gray-700">備註</label>
             <textarea id="notes" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
           </div>
           
           <div>
             <label class="inline-flex items-center">
               <input type="checkbox" id="isActive" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" checked>
-              <span class="ml-2 text-sm text-gray-700">启用提醒</span>
+              <span class="ml-2 text-sm text-gray-700">啟用提醒</span>
             </label>
           </div>
         </form>
@@ -266,12 +266,12 @@ const adminPage = `
     </div>
   </div>
 
-  <!-- 通知测试结果模态框 -->
+  <!-- 通知測試結果模態框 -->
   <div id="notificationResultModal" class="fixed inset-0 bg-black bg-opacity-50 modal-container hidden flex items-center justify-center z-50">
     <div class="bg-white rounded-lg max-w-md w-full mx-4">
       <div class="p-6">
         <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-medium text-gray-900">通知测试结果</h3>
+          <h3 class="text-lg font-medium text-gray-900">通知測試結果</h3>
           <button class="notificationResultClose text-gray-400 hover:text-gray-500">
             <i class="fas fa-times"></i>
           </button>
@@ -281,7 +281,7 @@ const adminPage = `
         
         <div class="flex justify-end">
           <button class="notificationResultClose btn-primary text-white px-4 py-2 rounded-md text-sm font-medium">
-            确定
+            確定
           </button>
         </div>
       </div>
@@ -289,12 +289,12 @@ const adminPage = `
   </div>
 
   <script>
-    // 获取所有订阅
+    // 取得所有訂閱
     async function loadSubscriptions() {
       try {
-        // 显示加载状态
+        // 顯示載入狀態
         const tbody = document.getElementById('subscriptionsBody');
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>加载中...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>載入中...</td></tr>';
         
         const response = await fetch('/api/subscriptions');
         const data = await response.json();
@@ -302,7 +302,7 @@ const adminPage = `
         tbody.innerHTML = '';
         
         if (data.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">没有订阅数据</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">沒有訂閱資料</td></tr>';
           return;
         }
         
@@ -318,21 +318,21 @@ const adminPage = `
           if (!subscription.isActive) {
             statusHtml = '<span class="px-2 py-1 text-xs font-medium rounded-full text-white bg-gray-500"><i class="fas fa-pause-circle mr-1"></i>已停用</span>';
           } else if (daysDiff < 0) {
-            statusHtml = '<span class="px-2 py-1 text-xs font-medium rounded-full text-white bg-red-500"><i class="fas fa-exclamation-circle mr-1"></i>已过期</span>';
+            statusHtml = '<span class="px-2 py-1 text-xs font-medium rounded-full text-white bg-red-500"><i class="fas fa-exclamation-circle mr-1"></i>已過期</span>';
           } else if (daysDiff <= subscription.reminderDays) {
-            statusHtml = '<span class="px-2 py-1 text-xs font-medium rounded-full text-white bg-yellow-500"><i class="fas fa-exclamation-triangle mr-1"></i>即将到期</span>';
+            statusHtml = '<span class="px-2 py-1 text-xs font-medium rounded-full text-white bg-yellow-500"><i class="fas fa-exclamation-triangle mr-1"></i>即將到期</span>';
           } else {
             statusHtml = '<span class="px-2 py-1 text-xs font-medium rounded-full text-white bg-green-500"><i class="fas fa-check-circle mr-1"></i>正常</span>';
           }
           
-          // 周期信息
+          // 週期資訊
           let periodText = '';
           if (subscription.periodValue && subscription.periodUnit) {
             const unitMap = { day: '天', month: '月', year: '年' };
             periodText = subscription.periodValue + ' ' + (unitMap[subscription.periodUnit] || subscription.periodUnit);
           }
           
-          // 使用字符串拼接而不是模板字符串来避免JSX解析问题
+          // 使用字串拼接而不是模板字串來避免 JSX 解析問題
           row.innerHTML = 
             '<td class="px-6 py-4 whitespace-nowrap">' + 
               '<div class="text-sm font-medium text-gray-900">' + subscription.name + '</div>' +
