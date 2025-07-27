@@ -1,7 +1,7 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// .wrangler/tmp/bundle-Ax5670/checked-fetch.js
+// .wrangler/tmp/bundle-a1OIIg/checked-fetch.js
 var urls = /* @__PURE__ */ new Set();
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
@@ -2199,74 +2199,49 @@ function addLunarPeriod(lunar, periodValue, periodUnit) {
     });
   <\/script>
   
-  <!-- Fallback script to ensure subscription data loads -->
   <script>
-    (function() {
-      function ensureSubscriptionsLoad() {
-        const tbody = document.getElementById('subscriptionsBody');
-        if (!tbody) return;
-        
-        // Show loading state
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>\u52A0\u8F7D\u4E2D...</td></tr>';
-        
-        fetch('/api/subscriptions')
-          .then(function(response) {
-            if (!response.ok) {
-              if (response.status === 401) {
-                window.location.href = '/';
-                return;
-              }
-              throw new Error('HTTP ' + response.status);
-            }
-            return response.json();
-          })
-          .then(function(data) {
-            if (!data || data.length === 0) {
-              tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-500">\u6CA1\u6709\u8BA2\u9605\u6570\u636E</td></tr>';
+    // Ensure subscription data loads even if other scripts fail
+    document.addEventListener('DOMContentLoaded', function() {
+      var tbody = document.getElementById('subscriptionsBody');
+      if (!tbody) return;
+      
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4">\u52A0\u8F7D\u4E2D...</td></tr>';
+      
+      fetch('/api/subscriptions')
+        .then(function(response) {
+          if (!response.ok) {
+            if (response.status === 401) {
+              window.location.href = '/';
               return;
             }
-            
-            var html = '';
-            data.forEach(function(sub) {
-              var expiryDate = new Date(sub.expiryDate);
-              var now = new Date();
-              var daysDiff = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
-              var statusClass = daysDiff < 0 ? 'text-red-600' : daysDiff <= 7 ? 'text-orange-600' : 'text-green-600';
-              var statusText = daysDiff < 0 ? '\u5DF2\u8FC7\u671F' : daysDiff === 0 ? '\u4ECA\u5929\u5230\u671F' : daysDiff + '\u5929\u540E\u5230\u671F';
-              
-              html += '<tr class="' + (sub.isActive === false ? 'bg-gray-100' : '') + '">';
-              html += '<td class="py-3 px-6 text-left">' + (sub.name || 'N/A') + '</td>';
-              html += '<td class="py-3 px-6 text-left">' + (sub.customType || '\u5176\u4ED6') + '</td>';
-              html += '<td class="py-3 px-6 text-left">';
-              html += '<div>' + expiryDate.toLocaleDateString('zh-CN') + '</div>';
-              html += '<div class="text-xs ' + statusClass + '">' + statusText + '</div>';
-              html += '</td>';
-              html += '<td class="py-3 px-6 text-left">' + (sub.amount ? sub.amount + ' ' + (sub.currency || 'NTD') : '-') + '</td>';
-              html += '<td class="py-3 px-6 text-left">' + (sub.reminderDays || 7) + '\u5929\u524D</td>';
-              html += '<td class="py-3 px-6 text-left">';
-              html += '<span class="px-2 py-1 text-xs rounded ' + (sub.isActive !== false ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800') + '">';
-              html += sub.isActive !== false ? '\u542F\u7528' : '\u505C\u7528';
-              html += '</span></td>';
-              html += '<td class="py-3 px-6 text-left">';
-              html += '<button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editSubscription('' + sub.id + '')">\u7F16\u8F91</button>';
-              html += '<button class="text-red-600 hover:text-red-800" onclick="deleteSubscription('' + sub.id + '')">\u5220\u9664</button>';
-              html += '</td>';
-              html += '</tr>';
-            });
-            tbody.innerHTML = html;
-          })
-          .catch(function(error) {
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-red-500">\u52A0\u8F7D\u5931\u8D25: ' + error.message + '</td></tr>';
+            throw new Error('HTTP ' + response.status);
+          }
+          return response.json();
+        })
+        .then(function(data) {
+          if (!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-500">\u6CA1\u6709\u8BA2\u9605\u6570\u636E</td></tr>';
+            return;
+          }
+          
+          var html = '';
+          data.forEach(function(sub) {
+            html += '<tr>';
+            html += '<td class="py-3 px-6 text-left">' + (sub.name || 'N/A') + '</td>';
+            html += '<td class="py-3 px-6 text-left">' + (sub.customType || '\u5176\u4ED6') + '</td>';
+            html += '<td class="py-3 px-6 text-left">' + (sub.expiryDate || 'N/A') + '</td>';
+            html += '<td class="py-3 px-6 text-left">' + (sub.amount ? sub.amount + ' ' + (sub.currency || 'NTD') : '-') + '</td>';
+            html += '<td class="py-3 px-6 text-left">' + (sub.reminderDays || 7) + '\u5929\u524D</td>';
+            html += '<td class="py-3 px-6 text-left">' + (sub.isActive !== false ? '\u542F\u7528' : '\u505C\u7528') + '</td>';
+            html += '<td class="py-3 px-6 text-left">\u64CD\u4F5C</td>';
+            html += '</tr>';
           });
-      }
-      
-      // Load on page ready
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', ensureSubscriptionsLoad);
-      } else {
-        ensureSubscriptionsLoad();
-      }
-    })();
+          tbody.innerHTML = html;
+        })
+        .catch(function(error) {
+          tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-red-500">\u52A0\u8F7D\u5931\u8D25: ' + error.message + '</td></tr>';
+        });
+    });
   <\/script>
 </body>
 </html>
@@ -4123,7 +4098,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// .wrangler/tmp/bundle-Ax5670/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-a1OIIg/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -4155,7 +4130,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-Ax5670/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-a1OIIg/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;

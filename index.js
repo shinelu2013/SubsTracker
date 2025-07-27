@@ -2044,74 +2044,49 @@ function addLunarPeriod(lunar, periodValue, periodUnit) {
     });
   </script>
   
-  <!-- Fallback script to ensure subscription data loads -->
   <script>
-    (function() {
-      function ensureSubscriptionsLoad() {
-        const tbody = document.getElementById('subscriptionsBody');
-        if (!tbody) return;
-        
-        // Show loading state
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>加载中...</td></tr>';
-        
-        fetch('/api/subscriptions')
-          .then(function(response) {
-            if (!response.ok) {
-              if (response.status === 401) {
-                window.location.href = '/';
-                return;
-              }
-              throw new Error('HTTP ' + response.status);
-            }
-            return response.json();
-          })
-          .then(function(data) {
-            if (!data || data.length === 0) {
-              tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-500">没有订阅数据</td></tr>';
+    // Ensure subscription data loads even if other scripts fail
+    document.addEventListener('DOMContentLoaded', function() {
+      var tbody = document.getElementById('subscriptionsBody');
+      if (!tbody) return;
+      
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4">加载中...</td></tr>';
+      
+      fetch('/api/subscriptions')
+        .then(function(response) {
+          if (!response.ok) {
+            if (response.status === 401) {
+              window.location.href = '/';
               return;
             }
-            
-            var html = '';
-            data.forEach(function(sub) {
-              var expiryDate = new Date(sub.expiryDate);
-              var now = new Date();
-              var daysDiff = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
-              var statusClass = daysDiff < 0 ? 'text-red-600' : daysDiff <= 7 ? 'text-orange-600' : 'text-green-600';
-              var statusText = daysDiff < 0 ? '已过期' : daysDiff === 0 ? '今天到期' : daysDiff + '天后到期';
-              
-              html += '<tr class="' + (sub.isActive === false ? 'bg-gray-100' : '') + '">';
-              html += '<td class="py-3 px-6 text-left">' + (sub.name || 'N/A') + '</td>';
-              html += '<td class="py-3 px-6 text-left">' + (sub.customType || '其他') + '</td>';
-              html += '<td class="py-3 px-6 text-left">';
-              html += '<div>' + expiryDate.toLocaleDateString('zh-CN') + '</div>';
-              html += '<div class="text-xs ' + statusClass + '">' + statusText + '</div>';
-              html += '</td>';
-              html += '<td class="py-3 px-6 text-left">' + (sub.amount ? sub.amount + ' ' + (sub.currency || 'NTD') : '-') + '</td>';
-              html += '<td class="py-3 px-6 text-left">' + (sub.reminderDays || 7) + '天前</td>';
-              html += '<td class="py-3 px-6 text-left">';
-              html += '<span class="px-2 py-1 text-xs rounded ' + (sub.isActive !== false ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800') + '">';
-              html += sub.isActive !== false ? '启用' : '停用';
-              html += '</span></td>';
-              html += '<td class="py-3 px-6 text-left">';
-              html += '<button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editSubscription(\'' + sub.id + '\')">编辑</button>';
-              html += '<button class="text-red-600 hover:text-red-800" onclick="deleteSubscription(\'' + sub.id + '\')">删除</button>';
-              html += '</td>';
-              html += '</tr>';
-            });
-            tbody.innerHTML = html;
-          })
-          .catch(function(error) {
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-red-500">加载失败: ' + error.message + '</td></tr>';
+            throw new Error('HTTP ' + response.status);
+          }
+          return response.json();
+        })
+        .then(function(data) {
+          if (!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-500">没有订阅数据</td></tr>';
+            return;
+          }
+          
+          var html = '';
+          data.forEach(function(sub) {
+            html += '<tr>';
+            html += '<td class="py-3 px-6 text-left">' + (sub.name || 'N/A') + '</td>';
+            html += '<td class="py-3 px-6 text-left">' + (sub.customType || '其他') + '</td>';
+            html += '<td class="py-3 px-6 text-left">' + (sub.expiryDate || 'N/A') + '</td>';
+            html += '<td class="py-3 px-6 text-left">' + (sub.amount ? sub.amount + ' ' + (sub.currency || 'NTD') : '-') + '</td>';
+            html += '<td class="py-3 px-6 text-left">' + (sub.reminderDays || 7) + '天前</td>';
+            html += '<td class="py-3 px-6 text-left">' + (sub.isActive !== false ? '启用' : '停用') + '</td>';
+            html += '<td class="py-3 px-6 text-left">操作</td>';
+            html += '</tr>';
           });
-      }
-      
-      // Load on page ready
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', ensureSubscriptionsLoad);
-      } else {
-        ensureSubscriptionsLoad();
-      }
-    })();
+          tbody.innerHTML = html;
+        })
+        .catch(function(error) {
+          tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-red-500">加载失败: ' + error.message + '</td></tr>';
+        });
+    });
   </script>
 </body>
 </html>
