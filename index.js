@@ -27,6 +27,21 @@ function formatBeijingTime(date = new Date(), format = 'full') {
   }
 }
 
+// 货币格式化函数 (服务端版本)
+function formatCurrency(amount, currency) {
+  if (!amount || amount === 0) return null;
+  
+  const currencyMap = {
+    'NTD': 'NT$ ' + Math.round(amount), // 台币不显示小数
+    'USD': 'US$ ' + parseFloat(amount).toFixed(2),
+    'JPY': 'JP¥ ' + Math.round(amount), // 日元通常不显示小数
+    'EUR': '€ ' + parseFloat(amount).toFixed(2),
+    'CNY': 'CN¥ ' + parseFloat(amount).toFixed(2)
+  };
+  
+  return currencyMap[currency] || parseFloat(amount).toFixed(2);
+}
+
 // 农历转换工具函数
 const lunarCalendar = {
   // 农历数据 (1900-2100年)
@@ -3226,7 +3241,16 @@ async function testSingleSubscriptionNotification(id, env) {
       lunarExpiryText = lunarExpiry ? ` (农历: ${lunarExpiry.fullStr})` : '';
     }
 
-    const commonContent = `**订阅详情**:\n- **类型**: ${subscription.customType || '其他'}\n- **到期日**: ${formatBeijingTime(new Date(subscription.expiryDate), 'date')}${lunarExpiryText}\n- **备注**: ${subscription.notes || '无'}`;
+    // 格式化金额
+    let amountText = '';
+    if (subscription.amount && subscription.amount > 0) {
+      const formattedAmount = formatCurrency(subscription.amount, subscription.currency);
+      if (formattedAmount) {
+        amountText = `\n- **金額**: ${formattedAmount}`;
+      }
+    }
+
+    const commonContent = `**订阅详情**: \n- **类型**: ${subscription.customType || '其他'}${amountText}\n- **到期日**: ${formatBeijingTime(new Date(subscription.expiryDate), 'date')}${lunarExpiryText}\n- **备注**: ${subscription.notes || ''}`;
 
     // 使用多渠道发送
     await sendNotificationToAllChannels(title, commonContent, config, '[手动测试]');
@@ -3738,10 +3762,19 @@ for (const subscription of subscriptions) {
           lunarExpiryText = lunarExpiry ? ` (农历: ${lunarExpiry.fullStr})` : '';
         }
 
+        // 格式化金额信息
+        let amountText = '';
+        if (sub.amount && sub.amount > 0) {
+          const formattedAmount = formatCurrency(sub.amount, sub.currency);
+          if (formattedAmount) {
+            amountText = ` (${formattedAmount})`;
+          }
+        }
+
         let statusText;
-        if (sub.daysRemaining === 0) statusText = `⚠️ **${sub.name}** (${typeText}) ${periodText} 今天到期！${lunarExpiryText}`;
-        else if (sub.daysRemaining < 0) statusText = `🚨 **${sub.name}** (${typeText}) ${periodText} 已过期 ${Math.abs(sub.daysRemaining)} 天${lunarExpiryText}`;
-        else statusText = `📅 **${sub.name}** (${typeText}) ${periodText} 将在 ${sub.daysRemaining} 天后到期${lunarExpiryText}`;
+        if (sub.daysRemaining === 0) statusText = `⚠️ **${sub.name}** (${typeText}) ${periodText}${amountText} 今天到期！${lunarExpiryText}`;
+        else if (sub.daysRemaining < 0) statusText = `🚨 **${sub.name}** (${typeText}) ${periodText}${amountText} 已过期 ${Math.abs(sub.daysRemaining)} 天${lunarExpiryText}`;
+        else statusText = `📅 **${sub.name}** (${typeText}) ${periodText}${amountText} 将在 ${sub.daysRemaining} 天后到期${lunarExpiryText}`;
 
         if (sub.notes) statusText += `\n   备注: ${sub.notes}`;
         commonContent += statusText + '\n\n';
