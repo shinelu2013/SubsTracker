@@ -1213,8 +1213,25 @@ function addLunarPeriod(lunar, periodValue, periodUnit) {
         const tbody = document.getElementById('subscriptionsBody');
         tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>加载中...</td></tr>';
 
+        console.log('[Frontend] 开始请求订阅数据');
         const response = await fetch('/api/subscriptions');
+        console.log('[Frontend] API响应状态:', response.status, response.statusText || 'unknown');
+        
+        if (!response.ok) {
+          if (response.status === 401) {
+            console.log('[Frontend] 未授权，重定向到登录页');
+            window.location.href = '/';
+            return;
+          }
+          
+          const errorData = await response.json().catch(() => ({ message: '未知错误' }));
+          console.error('[Frontend] API返回错误:', errorData);
+          tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-red-500">加载失败: ' + (errorData.message || 'HTTP ' + response.status) + '</td></tr>';
+          return;
+        }
+        
         const data = await response.json();
+        console.log('[Frontend] 收到订阅数据数量:', data.length);
         
         // 保存原始数据以供筛选使用
         window.allSubscriptions = data;
@@ -1231,9 +1248,9 @@ function addLunarPeriod(lunar, periodValue, periodUnit) {
         applyCurrentFilter();
         
       } catch (error) {
-        console.error('加载订阅失败:', error);
+        console.error('[Frontend] 加载订阅失败:', error);
         const tbody = document.getElementById('subscriptionsBody');
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-red-500">加载失败，请刷新页面重试</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-red-500">网络错误，请检查连接并刷新页面重试</td></tr>';
       }
     }
 
@@ -1843,7 +1860,7 @@ function addLunarPeriod(lunar, periodValue, periodUnit) {
 		console.log('solar from lunar2solar:', solar);  
 		console.log('solar.year:', solar.year, 'solar.month:', solar.month, 'solar.day:', solar.day);
 		console.log('expiry.getTime():', expiry.getTime());  
-console.log('expiry.toString():', expiry.toString());
+		console.log('expiry.toString():', expiry.toString());
 		
 		
 	  } else {
@@ -2024,6 +2041,51 @@ console.log('expiry.toString():', expiry.toString());
       if (typeFilter) {
         typeFilter.addEventListener('change', applyCurrentFilter);
       }
+    });
+  </script>
+  
+  <script>
+    // Ensure subscription data loads even if other scripts fail
+    document.addEventListener('DOMContentLoaded', function() {
+      var tbody = document.getElementById('subscriptionsBody');
+      if (!tbody) return;
+      
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4">加载中...</td></tr>';
+      
+      fetch('/api/subscriptions')
+        .then(function(response) {
+          if (!response.ok) {
+            if (response.status === 401) {
+              window.location.href = '/';
+              return;
+            }
+            throw new Error('HTTP ' + response.status);
+          }
+          return response.json();
+        })
+        .then(function(data) {
+          if (!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-500">没有订阅数据</td></tr>';
+            return;
+          }
+          
+          var html = '';
+          data.forEach(function(sub) {
+            html += '<tr>';
+            html += '<td class="py-3 px-6 text-left">' + (sub.name || 'N/A') + '</td>';
+            html += '<td class="py-3 px-6 text-left">' + (sub.customType || '其他') + '</td>';
+            html += '<td class="py-3 px-6 text-left">' + (sub.expiryDate || 'N/A') + '</td>';
+            html += '<td class="py-3 px-6 text-left">' + (sub.amount ? sub.amount + ' ' + (sub.currency || 'NTD') : '-') + '</td>';
+            html += '<td class="py-3 px-6 text-left">' + (sub.reminderDays || 7) + '天前</td>';
+            html += '<td class="py-3 px-6 text-left">' + (sub.isActive !== false ? '启用' : '停用') + '</td>';
+            html += '<td class="py-3 px-6 text-left">操作</td>';
+            html += '</tr>';
+          });
+          tbody.innerHTML = html;
+        })
+        .catch(function(error) {
+          tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-red-500">加载失败: ' + error.message + '</td></tr>';
+        });
     });
   </script>
 </body>
@@ -2693,9 +2755,13 @@ const api = {
     }
 
     const token = getCookieValue(request.headers.get('Cookie'), 'token');
+    console.log('[API] Token存在:', !!token);
+    
     const user = token ? await verifyJWT(token, config.JWT_SECRET) : null;
+    console.log('[API] 用户验证结果:', !!user);
 
     if (!user && path !== '/login') {
+      console.log('[API] 未授权访问路径:', path);
       return new Response(
         JSON.stringify({ success: false, message: '未授权访问' }),
         { status: 401, headers: { 'Content-Type': 'application/json' } }
@@ -2850,11 +2916,28 @@ const api = {
 
     if (path === '/subscriptions') {
       if (method === 'GET') {
-        const subscriptions = await getAllSubscriptions(env);
-        return new Response(
-          JSON.stringify(subscriptions),
-          { headers: { 'Content-Type': 'application/json' } }
-        );
+        try {
+          console.log('[API] 开始获取订阅列表');
+          const subscriptions = await getAllSubscriptions(env);
+          console.log('[API] 成功获取订阅列表，数量:', subscriptions.length);
+          return new Response(
+            JSON.stringify(subscriptions),
+            { headers: { 'Content-Type': 'application/json' } }
+          );
+        } catch (error) {
+          console.error('[API] 获取订阅列表失败:', error);
+          return new Response(
+            JSON.stringify({ 
+              success: false, 
+              message: '获取订阅列表失败: ' + error.message,
+              error: error.toString()
+            }),
+            { 
+              status: 500,
+              headers: { 'Content-Type': 'application/json' } 
+            }
+          );
+        }
       }
 
       if (method === 'POST') {
@@ -3117,10 +3200,23 @@ async function verifyJWT(token, secret) {
 
 async function getAllSubscriptions(env) {
   try {
+    console.log('[getAllSubscriptions] 开始获取订阅数据');
+    
+    if (!env.SUBSCRIPTIONS_KV) {
+      console.error('[getAllSubscriptions] KV存储未绑定');
+      throw new Error('KV存储未绑定');
+    }
+    
     const data = await env.SUBSCRIPTIONS_KV.get('subscriptions');
-    return data ? JSON.parse(data) : [];
+    console.log('[getAllSubscriptions] KV返回数据:', data ? `有数据 (长度: ${data.length})` : '无数据');
+    
+    const subscriptions = data ? JSON.parse(data) : [];
+    console.log('[getAllSubscriptions] 解析后的订阅数量:', subscriptions.length);
+    
+    return subscriptions;
   } catch (error) {
-    return [];
+    console.error('[getAllSubscriptions] 获取订阅数据失败:', error);
+    throw error; // 重新抛出错误而不是静默返回空数组
   }
 }
 
