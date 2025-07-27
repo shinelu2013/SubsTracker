@@ -1549,10 +1549,6 @@ function addLunarPeriod(lunar, periodValue, periodUnit) {
         }
       });
     }
-        
-        // 添加悬停功能
-        addHoverListeners();
-    }
     
     async function testSubscriptionNotification(e) {
         const button = e.target.tagName === 'BUTTON' ? e.target : e.target.parentElement;
@@ -1861,8 +1857,12 @@ function addLunarPeriod(lunar, periodValue, periodUnit) {
     
     window.addEventListener('load', loadSubscriptions);
     
-    // 添加类型筛选器事件监听
+    // 页面初始化
     window.addEventListener('load', function() {
+      // 加载订阅列表
+      loadSubscriptions();
+      
+      // 添加类型筛选器事件监听
       const typeFilter = document.getElementById('typeFilter');
       if (typeFilter) {
         typeFilter.addEventListener('change', applyCurrentFilter);
