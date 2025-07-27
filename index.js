@@ -1606,19 +1606,6 @@ function addLunarPeriod(lunar, periodValue, periodUnit) {
             }
           }
 
-		  // 生成各列内容
-		  const nameHtml = createHoverText(subscription.name, 20, 'text-sm font-medium text-gray-900');
-		  const typeHtml = createHoverText((subscription.customType || '其他'), 15, 'text-sm text-gray-900');
-		  const periodHtml = periodText ? createHoverText('周期: ' + periodText, 20, 'text-xs text-gray-500 mt-1') : '';
-
-          // 到期时间相关信息
-          const expiryDateText = formatBeijingTime(new Date(subscription.expiryDate), 'date');
-          const lunarHtml = lunarExpiryText ? createHoverText('农历: ' + lunarExpiryText, 25, 'text-xs text-blue-600 mt-1') : '';
-          const daysLeftText = daysDiff < 0 ? '已过期' + Math.abs(daysDiff) + '天' : '还剩' + daysDiff + '天';
-          const startDateText = subscription.startDate ?
-            '开始: ' + formatBeijingTime(new Date(subscription.startDate), 'date') + (startLunarText ? ' (' + startLunarText + ')' : '') : '';
-          const startDateHtml = startDateText ? createHoverText(startDateText, 30, 'text-xs text-gray-500 mt-1') : '';
-
         // 添加悬停功能
         function addHoverListeners() {
           // 计算悬浮提示位置
