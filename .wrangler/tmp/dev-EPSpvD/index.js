@@ -2007,15 +2007,9 @@ function addLunarPeriod(lunar, periodValue, periodUnit) {
   expiry.setMonth(solar.month - 1);  
   expiry.setDate(solar.day);  
 		document.getElementById('expiryDate').value = expiry.toISOString().split('T')[0];
-		console.log('start:', start);
-		console.log('nextLunar:', nextLunar);
-		console.log('expiry:', expiry);
-		console.log('expiryDate:', document.getElementById('expiryDate').value);
+		// Debug console logs removed to fix syntax error
 		
-		console.log('solar from lunar2solar:', solar);  
-		console.log('solar.year:', solar.year, 'solar.month:', solar.month, 'solar.day:', solar.day);
-		console.log('expiry.getTime():', expiry.getTime());  
-		console.log('expiry.toString():', expiry.toString());
+		// Debug console logs removed to fix syntax error
 		
 		
 	  } else {
@@ -2030,9 +2024,7 @@ function addLunarPeriod(lunar, periodValue, periodUnit) {
 		  expiry.setFullYear(start.getFullYear() + periodValue);
 		}
 		document.getElementById('expiryDate').value = expiry.toISOString().split('T')[0];
-		console.log('start:', start);
-		console.log('expiry:', expiry);
-		console.log('expiryDate:', document.getElementById('expiryDate').value);
+		// Debug console logs removed to fix syntax error
 	  }
 
 	  // \u66F4\u65B0\u519C\u5386\u663E\u793A
@@ -2200,7 +2192,7 @@ function addLunarPeriod(lunar, periodValue, periodUnit) {
   <\/script>
   
   <script>
-    // Ensure subscription data loads even if other scripts fail
+    // Enhanced subscription data renderer (replaces the broken advanced renderer)
     document.addEventListener('DOMContentLoaded', function() {
       var tbody = document.getElementById('subscriptionsBody');
       if (!tbody) return;
@@ -2224,19 +2216,143 @@ function addLunarPeriod(lunar, periodValue, periodUnit) {
             return;
           }
           
+          // Update type filter with available types
+          var typeFilter = document.getElementById('typeFilter');
+          var types = [];
+          data.forEach(function(sub) {
+            var type = sub.customType || '\u5176\u4ED6';
+            if (types.indexOf(type) === -1) {
+              types.push(type);
+            }
+          });
+          
+          // Clear existing options except "\u5168\u90E8"
+          while (typeFilter.children.length > 1) {
+            typeFilter.removeChild(typeFilter.lastChild);
+          }
+          
+          // Add type options
+          types.forEach(function(type) {
+            var option = document.createElement('option');
+            option.value = type;
+            option.textContent = type;
+            typeFilter.appendChild(option);
+          });
+          
+          // Sort by expiry date
+          data.sort(function(a, b) {
+            return new Date(a.expiryDate) - new Date(b.expiryDate);
+          });
+          
           var html = '';
           data.forEach(function(sub) {
-            html += '<tr>';
-            html += '<td class="py-3 px-6 text-left">' + (sub.name || 'N/A') + '</td>';
-            html += '<td class="py-3 px-6 text-left">' + (sub.customType || '\u5176\u4ED6') + '</td>';
-            html += '<td class="py-3 px-6 text-left">' + (sub.expiryDate || 'N/A') + '</td>';
-            html += '<td class="py-3 px-6 text-left">' + (sub.amount ? sub.amount + ' ' + (sub.currency || 'NTD') : '-') + '</td>';
-            html += '<td class="py-3 px-6 text-left">' + (sub.reminderDays || 7) + '\u5929\u524D</td>';
-            html += '<td class="py-3 px-6 text-left">' + (sub.isActive !== false ? '\u542F\u7528' : '\u505C\u7528') + '</td>';
-            html += '<td class="py-3 px-6 text-left">\u64CD\u4F5C</td>';
+            var expiryDate = new Date(sub.expiryDate);
+            var now = new Date();
+            var daysDiff = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+            
+            // Format date properly
+            var formattedDate = expiryDate.toLocaleDateString('zh-CN', {
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit'
+            });
+            
+            // Create status badge
+            var statusHtml = '';
+            if (!sub.isActive) {
+              statusHtml = '<span class="px-2 py-1 text-xs font-medium rounded-full text-white bg-gray-500">\u5DF2\u505C\u7528</span>';
+            } else if (daysDiff < 0) {
+              statusHtml = '<span class="px-2 py-1 text-xs font-medium rounded-full text-white bg-red-500">\u5DF2\u8FC7\u671F</span>';
+            } else if (daysDiff <= (sub.reminderDays || 7)) {
+              statusHtml = '<span class="px-2 py-1 text-xs font-medium rounded-full text-white bg-yellow-500">\u5373\u5C06\u5230\u671F</span>';
+            } else {
+              statusHtml = '<span class="px-2 py-1 text-xs font-medium rounded-full text-white bg-green-500">\u6B63\u5E38</span>';
+            }
+            
+            // Format amount
+            var amountText = '-';
+            if (sub.amount && sub.amount > 0) {
+              var currency = sub.currency || 'NTD';
+              if (currency === 'NTD') amountText = 'NT$ ' + parseFloat(sub.amount).toFixed(2);
+              else if (currency === 'USD') amountText = 'US$ ' + parseFloat(sub.amount).toFixed(2);
+              else if (currency === 'JPY') amountText = 'JP\xA5 ' + Math.round(sub.amount);
+              else if (currency === 'EUR') amountText = '\u20AC ' + parseFloat(sub.amount).toFixed(2);
+              else if (currency === 'CNY') amountText = 'CN\xA5 ' + parseFloat(sub.amount).toFixed(2);
+              else amountText = parseFloat(sub.amount).toFixed(2) + ' ' + currency;
+            }
+            
+            // Create action buttons
+            var actionButtons = 
+              '<div class="space-x-1">' +
+                '<button class="edit-btn btn-primary text-white px-2 py-1 rounded text-xs" data-id="' + sub.id + '">\u7F16\u8F91</button>' +
+                '<button class="test-btn btn-info text-white px-2 py-1 rounded text-xs" data-id="' + sub.id + '">\u6D4B\u8BD5</button>' +
+                '<button class="delete-btn btn-danger text-white px-2 py-1 rounded text-xs" data-id="' + sub.id + '">\u5220\u9664</button>' +
+                (sub.isActive ? 
+                  '<button class="toggle-btn btn-warning text-white px-2 py-1 rounded text-xs" data-id="' + sub.id + '" data-action="deactivate">\u505C\u7528</button>' :
+                  '<button class="toggle-btn btn-success text-white px-2 py-1 rounded text-xs" data-id="' + sub.id + '" data-action="activate">\u542F\u7528</button>') +
+              '</div>';
+            
+            html += '<tr class="hover:bg-gray-50">';
+            html += '<td class="px-4 py-3 text-sm font-medium text-gray-900">' + (sub.name || 'N/A') + '</td>';
+            html += '<td class="px-4 py-3 text-sm text-gray-900">' + (sub.customType || '\u5176\u4ED6') + '</td>';
+            html += '<td class="px-4 py-3"><div class="text-sm text-gray-900">' + formattedDate + '</div><div class="text-xs text-gray-500">\u8FD8\u5269' + (daysDiff < 0 ? '\u5DF2\u8FC7\u671F' + Math.abs(daysDiff) : daysDiff) + '\u5929</div></td>';
+            html += '<td class="px-4 py-3 text-sm text-gray-900">' + amountText + '</td>';
+            html += '<td class="px-4 py-3"><div class="text-sm text-gray-500">\u63D0\u524D' + (sub.reminderDays || 7) + '\u5929</div></td>';
+            html += '<td class="px-4 py-3">' + statusHtml + '</td>';
+            html += '<td class="px-4 py-3">' + actionButtons + '</td>';
             html += '</tr>';
           });
           tbody.innerHTML = html;
+          
+          // Add event listeners for buttons
+          document.querySelectorAll('.edit-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+              alert('\u7F16\u8F91\u529F\u80FD\u9700\u8981\u4FEE\u590DJavaScript\u8BED\u6CD5\u9519\u8BEF\u540E\u624D\u80FD\u4F7F\u7528');
+            });
+          });
+          
+          document.querySelectorAll('.test-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+              alert('\u6D4B\u8BD5\u529F\u80FD\u9700\u8981\u4FEE\u590DJavaScript\u8BED\u6CD5\u9519\u8BEF\u540E\u624D\u80FD\u4F7F\u7528');
+            });
+          });
+          
+          document.querySelectorAll('.delete-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+              if (confirm('\u786E\u5B9A\u8981\u5220\u9664\u8FD9\u4E2A\u8BA2\u9605\u5417\uFF1F')) {
+                var id = this.getAttribute('data-id');
+                fetch('/api/subscriptions/' + id, { method: 'DELETE' })
+                  .then(function(response) {
+                    if (response.ok) {
+                      location.reload();
+                    } else {
+                      alert('\u5220\u9664\u5931\u8D25');
+                    }
+                  });
+              }
+            });
+          });
+          
+          document.querySelectorAll('.toggle-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+              var id = this.getAttribute('data-id');
+              var action = this.getAttribute('data-action');
+              var isActivate = action === 'activate';
+              
+              fetch('/api/subscriptions/' + id + '/toggle', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isActive: isActivate })
+              })
+              .then(function(response) {
+                if (response.ok) {
+                  location.reload();
+                } else {
+                  alert((isActivate ? '\u542F\u7528' : '\u505C\u7528') + '\u5931\u8D25');
+                }
+              });
+            });
+          });
         })
         .catch(function(error) {
           tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-red-500">\u52A0\u8F7D\u5931\u8D25: ' + error.message + '</td></tr>';
