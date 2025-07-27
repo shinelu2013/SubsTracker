@@ -1541,6 +1541,7 @@ function addLunarPeriod(lunar, periodValue, periodUnit) {
       document.getElementById('reminderDays').value = '7';
       document.getElementById('isActive').checked = true;
       document.getElementById('autoRenew').checked = true;
+      document.getElementById('currency').value = 'NTD'; // 设置默认货币为台币
 
       loadLunarPreference();
       calculateExpiryDate();
