@@ -1,0 +1,1 @@
+[{"id":"1753583467862","name":"Test Subscription","customType":"Software","startDate":null,"expiryDate":"2025-08-02T00:00:00.000Z","periodValue":1,"periodUnit":"month","reminderDays":7,"notes":"Test subscription for validation","amount":9.99,"currency":"USD","isActive":true,"autoRenew":true,"useLunar":false,"createdAt":"2025-07-27T02:31:07.862Z"}]

@@ -1233,7 +1233,7 @@ function addLunarPeriod(lunar, periodValue, periodUnit) {
       } catch (error) {
         console.error('加载订阅失败:', error);
         const tbody = document.getElementById('subscriptionsBody');
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-red-500">加载失败，请刷新页面重试</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-red-500">加载失败，请刷新页面重试</td></tr>';
       }
     }
 
@@ -1282,7 +1282,7 @@ function addLunarPeriod(lunar, periodValue, periodUnit) {
       tbody.innerHTML = '';
       
       if (data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">没有符合条件的订阅数据</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-500">没有符合条件的订阅数据</td></tr>';
         return;
       }
       
@@ -1375,6 +1375,18 @@ function addLunarPeriod(lunar, periodValue, periodUnit) {
             '开始: ' + formatBeijingTime(new Date(subscription.startDate), 'date') + (startLunarText ? ' (' + startLunarText + ')' : '') : '';
           const startDateHtml = startDateText ? createHoverText(startDateText, 30, 'text-xs text-gray-500 mt-1') : '';
 
+		  // 生成金额显示
+		  let amountHtml = '';
+		  if (subscription.amount && subscription.amount > 0) {
+			const formattedAmount = formatCurrency(subscription.amount, subscription.currency);
+			if (formattedAmount) {
+			  amountHtml = '<div class="text-sm text-gray-900">' + formattedAmount + '</div>';
+			}
+		  }
+		  if (!amountHtml) {
+			amountHtml = '<div class="text-sm text-gray-400">-</div>';
+		  }
+
 		  //新增修改，修改日历类型
 		  row.innerHTML =
 			'<td data-label="名称" class="px-4 py-3"><div class="td-content-wrapper">' +
@@ -1386,14 +1398,15 @@ function addLunarPeriod(lunar, periodValue, periodUnit) {
 			  (periodHtml ? '<div class="flex items-center">' + periodHtml + autoRenewIcon + '</div>' : '') +
 			  calendarTypeHtml + // 新增：日历类型
 			'</div></td>' +
-			// ...existing code...
 			'<td data-label="到期时间" class="px-4 py-3"><div class="td-content-wrapper">' +
 			  '<div class="text-sm text-gray-900">' + expiryDateText + '</div>' +
 			  lunarHtml +
 			  '<div class="text-xs text-gray-500 mt-1">' + daysLeftText + '</div>' +
 			  startDateHtml +
 			'</div></td>' +
-			// ...existing code...
+			'<td data-label="金额" class="px-4 py-3"><div class="td-content-wrapper">' +
+			  amountHtml +
+			'</div></td>' +
 			'<td data-label="提醒设置" class="px-4 py-3"><div class="td-content-wrapper">' +
 			  '<div><i class="fas fa-bell mr-1"></i>提前' + (subscription.reminderDays || 0) + '天</div>' +
 			  (subscription.reminderDays === 0 ? '<div class="text-xs text-gray-500 mt-1">仅到期日提醒</div>' : '') +
@@ -1592,86 +1605,6 @@ function addLunarPeriod(lunar, periodValue, periodUnit) {
               notesHtml = '<div class="text-xs text-gray-500">' + notes + '</div>';
             }
           }
-
-		  // 生成各列内容
-		  const nameHtml = createHoverText(subscription.name, 20, 'text-sm font-medium text-gray-900');
-		  const typeHtml = createHoverText((subscription.customType || '其他'), 15, 'text-sm text-gray-900');
-		  const periodHtml = periodText ? createHoverText('周期: ' + periodText, 20, 'text-xs text-gray-500 mt-1') : '';
-
-          // 到期时间相关信息
-          const expiryDateText = formatBeijingTime(new Date(subscription.expiryDate), 'date');
-          const lunarHtml = lunarExpiryText ? createHoverText('农历: ' + lunarExpiryText, 25, 'text-xs text-blue-600 mt-1') : '';
-          const daysLeftText = daysDiff < 0 ? '已过期' + Math.abs(daysDiff) + '天' : '还剩' + daysDiff + '天';
-          const startDateText = subscription.startDate ?
-            '开始: ' + formatBeijingTime(new Date(subscription.startDate), 'date') + (startLunarText ? ' (' + startLunarText + ')' : '') : '';
-          const startDateHtml = startDateText ? createHoverText(startDateText, 30, 'text-xs text-gray-500 mt-1') : '';
-
-		  // 金额显示 - 使用新的货币格式化函数
-		  let amountHtml;
-		  if (subscription.amount && subscription.amount > 0) {
-		    const currency = subscription.currency || 'NTD'; // 默认为台币
-		    const formattedAmount = formatCurrency(subscription.amount, currency);
-		    amountHtml = '<div class="text-sm text-gray-900"><i class="fas fa-money-bill-wave mr-1 text-green-600"></i>' + formattedAmount + '</div>';
-		  } else {
-		    amountHtml = '<div class="text-xs text-gray-400">未设置</div>';
-		  }
-
-		  //新增修改，修改日历类型
-		  row.innerHTML =
-			'<td data-label="名称" class="px-4 py-3"><div class="td-content-wrapper">' +
-			  nameHtml +
-			  notesHtml +
-			'</div></td>' +
-			'<td data-label="类型" class="px-4 py-3"><div class="td-content-wrapper">' +
-			  '<div class="flex items-center"><i class="fas fa-tag mr-1"></i><span>' + typeHtml + '</span></div>' +
-			  (periodHtml ? '<div class="flex items-center">' + periodHtml + autoRenewIcon + '</div>' : '') +
-			  calendarTypeHtml + // 新增：日历类型
-			'</div></td>' +
-			// ...existing code...
-			'<td data-label="到期时间" class="px-4 py-3"><div class="td-content-wrapper">' +
-			  '<div class="text-sm text-gray-900">' + expiryDateText + '</div>' +
-			  lunarHtml +
-			  '<div class="text-xs text-gray-500 mt-1">' + daysLeftText + '</div>' +
-			  startDateHtml +
-			'</div></td>' +
-			'<td data-label="金额" class="px-4 py-3"><div class="td-content-wrapper">' +
-			  amountHtml +
-			'</div></td>' +
-			// ...existing code...
-			'<td data-label="提醒设置" class="px-4 py-3"><div class="td-content-wrapper">' +
-			  '<div><i class="fas fa-bell mr-1"></i>提前' + (subscription.reminderDays || 0) + '天</div>' +
-			  (subscription.reminderDays === 0 ? '<div class="text-xs text-gray-500 mt-1">仅到期日提醒</div>' : '') +
-			'</div></td>' +
-			'<td data-label="状态" class="px-4 py-3"><div class="td-content-wrapper">' + statusHtml + '</div></td>' +
-			'<td data-label="操作" class="px-4 py-3">' +
-			  '<div class="action-buttons-wrapper">' +
-				'<button class="edit btn-primary text-white px-2 py-1 rounded text-xs whitespace-nowrap" data-id="' + subscription.id + '"><i class="fas fa-edit mr-1"></i>编辑</button>' +
-				'<button class="test-notify btn-info text-white px-2 py-1 rounded text-xs whitespace-nowrap" data-id="' + subscription.id + '"><i class="fas fa-paper-plane mr-1"></i>测试</button>' +
-				'<button class="delete btn-danger text-white px-2 py-1 rounded text-xs whitespace-nowrap" data-id="' + subscription.id + '"><i class="fas fa-trash-alt mr-1"></i>删除</button>' +
-				(subscription.isActive ?
-				  '<button class="toggle-status btn-warning text-white px-2 py-1 rounded text-xs whitespace-nowrap" data-id="' + subscription.id + '" data-action="deactivate"><i class="fas fa-pause-circle mr-1"></i>停用</button>' :
-				  '<button class="toggle-status btn-success text-white px-2 py-1 rounded text-xs whitespace-nowrap" data-id="' + subscription.id + '" data-action="activate"><i class="fas fa-play-circle mr-1"></i>启用</button>') +
-			  '</div>' +
-			'</td>';
-
-		  tbody.appendChild(row);
-        });
-        
-        document.querySelectorAll('.edit').forEach(button => {
-          button.addEventListener('click', editSubscription);
-        });
-        
-        document.querySelectorAll('.delete').forEach(button => {
-          button.addEventListener('click', deleteSubscription);
-        });
-        
-        document.querySelectorAll('.toggle-status').forEach(button => {
-          button.addEventListener('click', toggleSubscriptionStatus);
-        });
-
-        document.querySelectorAll('.test-notify').forEach(button => {
-          button.addEventListener('click', testSubscriptionNotification);
-        });
 
         // 添加悬停功能
         function addHoverListeners() {
