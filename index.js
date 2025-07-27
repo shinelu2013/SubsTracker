@@ -617,22 +617,25 @@ const adminPage = `
         <table class="w-full divide-y divide-gray-200 responsive-table">
           <thead class="bg-gray-50">
             <tr>
-              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 25%;">
+              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 20%;">
                 名称
               </th>
-              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 15%;">
+              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 12%;">
                 类型
               </th>
-              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 20%;">
+              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 18%;">
                 到期时间 <i class="fas fa-sort-up ml-1 text-indigo-500" title="按到期时间升序排列"></i>
               </th>
-              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 15%;">
+              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 10%;">
+                金额
+              </th>
+              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 12%;">
                 提醒设置
               </th>
               <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 10%;">
                 状态
               </th>
-              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 15%;">
+              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 18%;">
                 操作
               </th>
             </tr>
@@ -673,6 +676,30 @@ const adminPage = `
               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
             <div class="error-message text-red-500"></div>
           </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="amount" class="block text-sm font-medium text-gray-700 mb-1">订阅金额</label>
+            <div class="flex space-x-2">
+              <div class="flex-1 relative">
+                <input type="number" id="amount" step="0.01" min="0" placeholder="0.00"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+              </div>
+              <div class="w-32">
+                <select id="currency" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                  <option value="NTD" selected>台幣 (NTD)</option>
+                  <option value="USD">美元 (USD)</option>
+                  <option value="JPY">日元 (JPY)</option>
+                  <option value="EUR">歐元 (EUR)</option>
+                  <option value="CNY">人民幣 (CNY)</option>
+                </select>
+              </div>
+            </div>
+            <p class="text-xs text-gray-500 mt-1">订阅费用（可选）</p>
+            <div class="error-message text-red-500"></div>
+          </div>
+          <div></div>
         </div>
         
         <div class="mb-4">
@@ -1051,6 +1078,22 @@ function addLunarPeriod(lunar, periodValue, periodUnit) {
       toggleLunarDisplay();
     }
 
+    // 货币格式化函数
+    function formatCurrency(amount, currency) {
+      if (!amount || amount === 0) return null;
+      
+      const formattedAmount = parseFloat(amount).toFixed(2);
+      const currencyMap = {
+        'NTD': 'NT$ ' + formattedAmount,
+        'USD': 'US$ ' + formattedAmount,
+        'JPY': 'JP¥ ' + Math.round(amount), // 日元通常不显示小数
+        'EUR': '€ ' + formattedAmount,
+        'CNY': 'CN¥ ' + formattedAmount
+      };
+      
+      return currencyMap[currency] || formattedAmount;
+    }
+
     function handleListLunarToggle() {
       const listShowLunar = document.getElementById('listShowLunar');
       // 保存用户偏好
@@ -1130,6 +1173,13 @@ function addLunarPeriod(lunar, periodValue, periodUnit) {
         isValid = false;
       }
 
+      // 验证金额字段（可选）
+      const amount = document.getElementById('amount').value;
+      if (amount && (isNaN(amount) || parseFloat(amount) < 0)) {
+        showFieldError('amount', '金额必须是非负数');
+        isValid = false;
+      }
+
       return isValid;
     }
 
@@ -1161,7 +1211,7 @@ function addLunarPeriod(lunar, periodValue, periodUnit) {
         }
 
         const tbody = document.getElementById('subscriptionsBody');
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>加载中...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>加载中...</td></tr>';
 
         const response = await fetch('/api/subscriptions');
         const data = await response.json();
@@ -1171,6 +1221,11 @@ function addLunarPeriod(lunar, periodValue, periodUnit) {
         
         // 更新类型筛选器
         updateTypeFilter(data);
+
+        if (data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-500">没有订阅数据</td></tr>';
+          return;
+        }
         
         // 应用当前筛选
         applyCurrentFilter();
@@ -1551,6 +1606,16 @@ function addLunarPeriod(lunar, periodValue, periodUnit) {
             '开始: ' + formatBeijingTime(new Date(subscription.startDate), 'date') + (startLunarText ? ' (' + startLunarText + ')' : '') : '';
           const startDateHtml = startDateText ? createHoverText(startDateText, 30, 'text-xs text-gray-500 mt-1') : '';
 
+		  // 金额显示 - 使用新的货币格式化函数
+		  let amountHtml;
+		  if (subscription.amount && subscription.amount > 0) {
+		    const currency = subscription.currency || 'NTD'; // 默认为台币
+		    const formattedAmount = formatCurrency(subscription.amount, currency);
+		    amountHtml = '<div class="text-sm text-gray-900"><i class="fas fa-money-bill-wave mr-1 text-green-600"></i>' + formattedAmount + '</div>';
+		  } else {
+		    amountHtml = '<div class="text-xs text-gray-400">未设置</div>';
+		  }
+
 		  //新增修改，修改日历类型
 		  row.innerHTML =
 			'<td data-label="名称" class="px-4 py-3"><div class="td-content-wrapper">' +
@@ -1568,6 +1633,9 @@ function addLunarPeriod(lunar, periodValue, periodUnit) {
 			  lunarHtml +
 			  '<div class="text-xs text-gray-500 mt-1">' + daysLeftText + '</div>' +
 			  startDateHtml +
+			'</div></td>' +
+			'<td data-label="金额" class="px-4 py-3"><div class="td-content-wrapper">' +
+			  amountHtml +
 			'</div></td>' +
 			// ...existing code...
 			'<td data-label="提醒设置" class="px-4 py-3"><div class="td-content-wrapper">' +
@@ -1697,7 +1765,7 @@ function addLunarPeriod(lunar, periodValue, periodUnit) {
       } catch (error) {
         console.error('加载订阅失败:', error);
         const tbody = document.getElementById('subscriptionsBody');
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-red-500"><i class="fas fa-exclamation-circle mr-2"></i>加载失败，请刷新页面重试</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-red-500"><i class="fas fa-exclamation-circle mr-2"></i>加载失败，请刷新页面重试</td></tr>';
         showToast('加载订阅列表失败', 'error');
       }
     }
@@ -1773,6 +1841,7 @@ function addLunarPeriod(lunar, periodValue, periodUnit) {
       document.getElementById('reminderDays').value = '7';
       document.getElementById('isActive').checked = true;
       document.getElementById('autoRenew').checked = true;
+      document.getElementById('currency').value = 'NTD'; // 设置默认货币为台币
 
       loadLunarPreference();
       calculateExpiryDate();
@@ -1893,6 +1962,8 @@ console.log('expiry.toString():', expiry.toString());
         name: document.getElementById('name').value.trim(),
         customType: document.getElementById('customType').value.trim(),
         notes: document.getElementById('notes').value.trim() || '',
+        amount: document.getElementById('amount').value ? parseFloat(document.getElementById('amount').value) : null, // 新增：金额字段
+        currency: document.getElementById('currency').value, // 新增：货币字段
         isActive: document.getElementById('isActive').checked,
         autoRenew: document.getElementById('autoRenew').checked,
         startDate: document.getElementById('startDate').value,
@@ -1950,6 +2021,8 @@ console.log('expiry.toString():', expiry.toString());
           document.getElementById('name').value = subscription.name;
           document.getElementById('customType').value = subscription.customType || '';
           document.getElementById('notes').value = subscription.notes || '';
+          document.getElementById('amount').value = subscription.amount || ''; // 新增：金额字段
+          document.getElementById('currency').value = subscription.currency || 'NTD'; // 新增：货币字段，默认台币
           document.getElementById('isActive').checked = subscription.isActive !== false;
           document.getElementById('autoRenew').checked = subscription.autoRenew !== false;
           document.getElementById('startDate').value = subscription.startDate ? subscription.startDate.split('T')[0] : '';
@@ -3178,6 +3251,8 @@ async function createSubscription(subscription, env) {
       periodUnit: subscription.periodUnit || 'month',
       reminderDays: subscription.reminderDays !== undefined ? subscription.reminderDays : 7,
       notes: subscription.notes || '',
+      amount: subscription.amount || null, // 新增：金额字段
+      currency: subscription.currency || 'NTD', // 新增：货币字段，默认台币
       isActive: subscription.isActive !== false,
       autoRenew: subscription.autoRenew !== false,
       useLunar: useLunar, // 新增
@@ -3256,6 +3331,8 @@ if (useLunar) {
       periodUnit: subscription.periodUnit || subscriptions[index].periodUnit || 'month',
       reminderDays: subscription.reminderDays !== undefined ? subscription.reminderDays : (subscriptions[index].reminderDays !== undefined ? subscriptions[index].reminderDays : 7),
       notes: subscription.notes || '',
+      amount: subscription.amount !== undefined ? subscription.amount : subscriptions[index].amount, // 新增：金额字段
+      currency: subscription.currency || subscriptions[index].currency || 'NTD', // 新增：货币字段，默认台币
       isActive: subscription.isActive !== undefined ? subscription.isActive : subscriptions[index].isActive,
       autoRenew: subscription.autoRenew !== undefined ? subscription.autoRenew : (subscriptions[index].autoRenew !== undefined ? subscriptions[index].autoRenew : true),
       useLunar: useLunar, // 新增
