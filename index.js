@@ -3423,7 +3423,7 @@ async function sendNotificationToAllChannels(title, commonContent, config, logPr
         console.log(`${logPrefix} 发送NotifyX通知 ${success ? '成功' : '失败'}`);
     }
     if (config.ENABLED_NOTIFIERS.includes('telegram')) {
-        const telegramContent = `*${title}*\n\n${commonContent.replace(/(\s)/g, ' ')}`;
+        const telegramContent = `*${title}*\n\n${commonContent}`;
         const success = await sendTelegramNotification(telegramContent, config);
         console.log(`${logPrefix} 发送Telegram通知 ${success ? '成功' : '失败'}`);
     }
