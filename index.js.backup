@@ -2011,14 +2011,6 @@ console.log('expiry.toString():', expiry.toString());
     }
     
     window.addEventListener('load', loadSubscriptions);
-    
-    // 添加类型筛选器事件监听
-    window.addEventListener('load', function() {
-      const typeFilter = document.getElementById('typeFilter');
-      if (typeFilter) {
-        typeFilter.addEventListener('change', applyCurrentFilter);
-      }
-    });
   </script>
 </body>
 </html>
