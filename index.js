@@ -180,71 +180,182 @@ const lunarCalendar = {
 const lunarBiz = {
   // 农历加周期，返回新的农历日期对象
   addLunarPeriod(lunar, periodValue, periodUnit) {
-    let { year, month, day, isLeap } = lunar;
-    if (periodUnit === 'year') {
-      year += periodValue;
-      const leap = lunarCalendar.leapMonth(year);
-      if (isLeap && leap === month) {
-        isLeap = true;
-      } else {
-        isLeap = false;
+    try {
+      if (!lunar || typeof lunar !== 'object') {
+        throw new Error('无效的农历日期对象');
       }
-    } else if (periodUnit === 'month') {
-      let totalMonths = (year - 1900) * 12 + (month - 1) + periodValue;
-      year = Math.floor(totalMonths / 12) + 1900;
-      month = (totalMonths % 12) + 1;
-      const leap = lunarCalendar.leapMonth(year);
-      if (isLeap && leap === month) {
-        isLeap = true;
-      } else {
-        isLeap = false;
+      
+      if (!periodValue || periodValue <= 0) {
+        throw new Error('周期数值必须大于0');
       }
-    } else if (periodUnit === 'day') {
-      const solar = lunarBiz.lunar2solar(lunar);
-      const date = new Date(solar.year, solar.month - 1, solar.day + periodValue);
-      return lunarCalendar.solar2lunar(date.getFullYear(), date.getMonth() + 1, date.getDate());
+      
+      if (!['year', 'month', 'day'].includes(periodUnit)) {
+        throw new Error('不支持的周期单位: ' + periodUnit);
+      }
+      
+      let { year, month, day, isLeap } = lunar;
+      
+      if (!year || !month || !day) {
+        throw new Error('农历日期对象缺少必要字段');
+      }
+      
+      if (year < 1900 || year > 2100) {
+        throw new Error('农历年份超出支持范围（1900-2100）');
+      }
+      
+      if (periodUnit === 'year') {
+        year += periodValue;
+        if (year > 2100) {
+          throw new Error('计算后的农历年份超出支持范围');
+        }
+        const leap = lunarCalendar.leapMonth(year);
+        if (isLeap && leap === month) {
+          isLeap = true;
+        } else {
+          isLeap = false;
+        }
+      } else if (periodUnit === 'month') {
+        let totalMonths = (year - 1900) * 12 + (month - 1) + periodValue;
+        year = Math.floor(totalMonths / 12) + 1900;
+        month = (totalMonths % 12) + 1;
+        
+        if (year > 2100) {
+          throw new Error('计算后的农历年份超出支持范围');
+        }
+        
+        const leap = lunarCalendar.leapMonth(year);
+        if (isLeap && leap === month) {
+          isLeap = true;
+        } else {
+          isLeap = false;
+        }
+      } else if (periodUnit === 'day') {
+        const solar = lunarBiz.lunar2solar(lunar);
+        if (!solar) {
+          throw new Error('农历转公历失败');
+        }
+        const date = new Date(solar.year, solar.month - 1, solar.day + periodValue);
+        const result = lunarCalendar.solar2lunar(date.getFullYear(), date.getMonth() + 1, date.getDate());
+        if (!result) {
+          throw new Error('公历转农历失败');
+        }
+        return result;
+      }
+      
+      let maxDay = isLeap
+        ? lunarCalendar.leapDays(year)
+        : lunarCalendar.monthDays(year, month);
+      let targetDay = Math.min(day, maxDay);
+      
+      // 验证日期的有效性
+      let attempts = 0;
+      while (targetDay > 0 && attempts < 31) {
+        attempts++;
+        let solar = lunarBiz.lunar2solar({ year, month, day: targetDay, isLeap });
+        if (solar) {
+          return { year, month, day: targetDay, isLeap };
+        }
+        targetDay--;
+      }
+      
+      if (attempts >= 31) {
+        throw new Error('无法找到有效的农历日期');
+      }
+      
+      return { year, month, day, isLeap };
+    } catch (error) {
+      console.error('[lunarBiz.addLunarPeriod] 农历周期计算失败:', error);
+      throw new Error('农历周期计算失败: ' + error.message);
     }
-    let maxDay = isLeap
-      ? lunarCalendar.leapDays(year)
-      : lunarCalendar.monthDays(year, month);
-    let targetDay = Math.min(day, maxDay);
-    while (targetDay > 0) {
-      let solar = lunarBiz.lunar2solar({ year, month, day: targetDay, isLeap });
-      if (solar) {
-        return { year, month, day: targetDay, isLeap };
-      }
-      targetDay--;
-    }
-    return { year, month, day, isLeap };
   },
+  
   // 农历转公历（遍历法，适用1900-2100年）
   lunar2solar(lunar) {
-    for (let y = lunar.year - 1; y <= lunar.year + 1; y++) {
-      for (let m = 1; m <= 12; m++) {
-        for (let d = 1; d <= 31; d++) {
-          const date = new Date(y, m - 1, d);
-          if (date.getFullYear() !== y || date.getMonth() + 1 !== m || date.getDate() !== d) continue;
-          const l = lunarCalendar.solar2lunar(y, m, d);
-          if (
-            l &&
-            l.year === lunar.year &&
-            l.month === lunar.month &&
-            l.day === lunar.day &&
-            l.isLeap === lunar.isLeap
-          ) {
-            return { year: y, month: m, day: d };
+    try {
+      if (!lunar || typeof lunar !== 'object') {
+        throw new Error('无效的农历日期对象');
+      }
+      
+      const { year, month, day, isLeap } = lunar;
+      
+      if (!year || !month || !day) {
+        throw new Error('农历日期对象缺少必要字段');
+      }
+      
+      if (year < 1900 || year > 2100) {
+        throw new Error('农历年份超出支持范围（1900-2100）');
+      }
+      
+      if (month < 1 || month > 12) {
+        throw new Error('农历月份无效');
+      }
+      
+      if (day < 1 || day > 30) {
+        throw new Error('农历日期无效');
+      }
+      
+      // 限制搜索范围，避免无限循环
+      for (let y = Math.max(1900, year - 1); y <= Math.min(2100, year + 1); y++) {
+        for (let m = 1; m <= 12; m++) {
+          // 获取该月的天数，避免无效日期
+          const daysInMonth = new Date(y, m, 0).getDate();
+          for (let d = 1; d <= daysInMonth; d++) {
+            try {
+              const date = new Date(y, m - 1, d);
+              if (date.getFullYear() !== y || date.getMonth() + 1 !== m || date.getDate() !== d) continue;
+              
+              const l = lunarCalendar.solar2lunar(y, m, d);
+              if (
+                l &&
+                l.year === year &&
+                l.month === month &&
+                l.day === day &&
+                l.isLeap === isLeap
+              ) {
+                return { year: y, month: m, day: d };
+              }
+            } catch (dateError) {
+              // 忽略无效日期，继续下一个
+              continue;
+            }
           }
         }
       }
+      
+      return null;
+    } catch (error) {
+      console.error('[lunarBiz.lunar2solar] 农历转公历失败:', error);
+      return null;
     }
-    return null;
   },
+  
   // 距离农历日期还有多少天
   daysToLunar(lunar) {
-    const solar = lunarBiz.lunar2solar(lunar);
-    const date = new Date(solar.year, solar.month - 1, solar.day);
-    const now = new Date();
-    return Math.ceil((date - now) / (1000 * 60 * 60 * 24));
+    try {
+      if (!lunar || typeof lunar !== 'object') {
+        throw new Error('无效的农历日期对象');
+      }
+      
+      const solar = lunarBiz.lunar2solar(lunar);
+      if (!solar) {
+        throw new Error('农历转公历失败');
+      }
+      
+      const date = new Date(solar.year, solar.month - 1, solar.day);
+      const now = new Date();
+      
+      // 设置时间为当天的午夜，避免时间差异
+      date.setHours(0, 0, 0, 0);
+      now.setHours(0, 0, 0, 0);
+      
+      const diffTime = date - now;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      return diffDays;
+    } catch (error) {
+      console.error('[lunarBiz.daysToLunar] 计算农历日期距离失败:', error);
+      throw new Error('计算农历日期距离失败: ' + error.message);
+    }
   }
 };
 
@@ -3011,15 +3122,52 @@ async function getAllSubscriptions(env) {
       throw new Error('KV存储未绑定');
     }
     
+    console.log('[getAllSubscriptions] KV存储已绑定，正在获取数据');
     const data = await env.SUBSCRIPTIONS_KV.get('subscriptions');
     console.log('[getAllSubscriptions] KV返回数据:', data ? `有数据 (长度: ${data.length})` : '无数据');
     
-    const subscriptions = data ? JSON.parse(data) : [];
-    console.log('[getAllSubscriptions] 解析后的订阅数量:', subscriptions.length);
+    let subscriptions;
+    if (data) {
+      try {
+        subscriptions = JSON.parse(data);
+        console.log('[getAllSubscriptions] JSON解析成功，订阅数量:', subscriptions.length);
+      } catch (parseError) {
+        console.error('[getAllSubscriptions] JSON解析失败:', parseError);
+        throw new Error('订阅数据格式错误: ' + parseError.message);
+      }
+    } else {
+      subscriptions = [];
+      console.log('[getAllSubscriptions] 未找到订阅数据，返回空数组');
+    }
     
-    return subscriptions;
+    // 验证数据完整性
+    if (!Array.isArray(subscriptions)) {
+      console.error('[getAllSubscriptions] 订阅数据不是数组格式');
+      throw new Error('订阅数据格式错误：不是数组');
+    }
+    
+    // 过滤掉无效的订阅数据
+    const validSubscriptions = subscriptions.filter(sub => {
+      if (!sub || typeof sub !== 'object') {
+        console.warn('[getAllSubscriptions] 发现无效订阅对象:', sub);
+        return false;
+      }
+      if (!sub.id || !sub.name || !sub.expiryDate) {
+        console.warn('[getAllSubscriptions] 发现缺少必填字段的订阅:', sub);
+        return false;
+      }
+      return true;
+    });
+    
+    if (validSubscriptions.length !== subscriptions.length) {
+      console.warn('[getAllSubscriptions] 过滤掉 ' + (subscriptions.length - validSubscriptions.length) + ' 个无效订阅');
+    }
+    
+    console.log('[getAllSubscriptions] 返回有效订阅数量:', validSubscriptions.length);
+    return validSubscriptions;
   } catch (error) {
     console.error('[getAllSubscriptions] 获取订阅数据失败:', error);
+    console.error('[getAllSubscriptions] 错误堆栈:', error.stack);
     throw error; // 重新抛出错误而不是静默返回空数组
   }
 }
@@ -3412,40 +3560,144 @@ async function sendWechatBotNotification(title, content, config) {
 }
 
 async function sendNotificationToAllChannels(title, commonContent, config, logPrefix = '[定时任务]') {
-    if (!config.ENABLED_NOTIFIERS || config.ENABLED_NOTIFIERS.length === 0) {
-        console.log(`${logPrefix} 未启用任何通知渠道。`);
-        return;
-    }
+    try {
+        console.log(`${logPrefix} 开始发送通知，标题: "${title}"`);
+        
+        if (!config.ENABLED_NOTIFIERS || config.ENABLED_NOTIFIERS.length === 0) {
+            console.log(`${logPrefix} 未启用任何通知渠道`);
+            return;
+        }
 
-    if (config.ENABLED_NOTIFIERS.includes('notifyx')) {
-        const notifyxContent = `## ${title}\n\n${commonContent}`;
-        const success = await sendNotifyXNotification(title, notifyxContent, `订阅提醒`, config);
-        console.log(`${logPrefix} 发送NotifyX通知 ${success ? '成功' : '失败'}`);
-    }
-    if (config.ENABLED_NOTIFIERS.includes('telegram')) {
-        const telegramContent = `*${title}*\n\n${commonContent}`;
-        const success = await sendTelegramNotification(telegramContent, config);
-        console.log(`${logPrefix} 发送Telegram通知 ${success ? '成功' : '失败'}`);
-    }
-    if (config.ENABLED_NOTIFIERS.includes('webhook')) {
-        const webhookContent = commonContent.replace(/(\**|\*|##|#|`)/g, '');
-        const success = await sendWebhookNotification(title, webhookContent, config);
-        console.log(`${logPrefix} 发送企业微信应用通知 ${success ? '成功' : '失败'}`);
-    }
-    if (config.ENABLED_NOTIFIERS.includes('wechatbot')) {
-        const wechatbotContent = commonContent.replace(/(\**|\*|##|#|`)/g, '');
-        const success = await sendWechatBotNotification(title, wechatbotContent, config);
-        console.log(`${logPrefix} 发送企业微信机器人通知 ${success ? '成功' : '失败'}`);
-    }
-    if (config.ENABLED_NOTIFIERS.includes('weixin')) {
-        const weixinContent = `【${title}】\n\n${commonContent.replace(/(\**|\*|##|#|`)/g, '')}`;
-        const result = await sendWeComNotification(weixinContent, config);
-        console.log(`${logPrefix} 发送企业微信通知 ${result.success ? '成功' : '失败'}. ${result.message}`);
-    }
-    if (config.ENABLED_NOTIFIERS.includes('email')) {
-        const emailContent = commonContent.replace(/(\**|\*|##|#|`)/g, '');
-        const success = await sendEmailNotification(title, emailContent, config);
-        console.log(`${logPrefix} 发送邮件通知 ${success ? '成功' : '失败'}`);
+        console.log(`${logPrefix} 启用的通知渠道:`, config.ENABLED_NOTIFIERS);
+
+        const notificationPromises = [];
+
+        if (config.ENABLED_NOTIFIERS.includes('notifyx')) {
+            console.log(`${logPrefix} 准备发送NotifyX通知`);
+            const notifyxContent = `## ${title}\n\n${commonContent}`;
+            notificationPromises.push(
+                sendNotifyXNotification(title, notifyxContent, `订阅提醒`, config)
+                    .then(success => {
+                        console.log(`${logPrefix} NotifyX通知发送 ${success ? '成功' : '失败'}`);
+                        return { channel: 'notifyx', success };
+                    })
+                    .catch(error => {
+                        console.error(`${logPrefix} NotifyX通知发送出错:`, error);
+                        return { channel: 'notifyx', success: false, error: error.message };
+                    })
+            );
+        }
+        
+        if (config.ENABLED_NOTIFIERS.includes('telegram')) {
+            console.log(`${logPrefix} 准备发送Telegram通知`);
+            const telegramContent = `*${title}*\n\n${commonContent}`;
+            notificationPromises.push(
+                sendTelegramNotification(telegramContent, config)
+                    .then(success => {
+                        console.log(`${logPrefix} Telegram通知发送 ${success ? '成功' : '失败'}`);
+                        return { channel: 'telegram', success };
+                    })
+                    .catch(error => {
+                        console.error(`${logPrefix} Telegram通知发送出错:`, error);
+                        return { channel: 'telegram', success: false, error: error.message };
+                    })
+            );
+        }
+        
+        if (config.ENABLED_NOTIFIERS.includes('webhook')) {
+            console.log(`${logPrefix} 准备发送企业微信应用通知`);
+            const webhookContent = commonContent.replace(/(\**|\*|##|#|`)/g, '');
+            notificationPromises.push(
+                sendWebhookNotification(title, webhookContent, config)
+                    .then(success => {
+                        console.log(`${logPrefix} 企业微信应用通知发送 ${success ? '成功' : '失败'}`);
+                        return { channel: 'webhook', success };
+                    })
+                    .catch(error => {
+                        console.error(`${logPrefix} 企业微信应用通知发送出错:`, error);
+                        return { channel: 'webhook', success: false, error: error.message };
+                    })
+            );
+        }
+        
+        if (config.ENABLED_NOTIFIERS.includes('wechatbot')) {
+            console.log(`${logPrefix} 准备发送企业微信机器人通知`);
+            const wechatbotContent = commonContent.replace(/(\**|\*|##|#|`)/g, '');
+            notificationPromises.push(
+                sendWechatBotNotification(title, wechatbotContent, config)
+                    .then(success => {
+                        console.log(`${logPrefix} 企业微信机器人通知发送 ${success ? '成功' : '失败'}`);
+                        return { channel: 'wechatbot', success };
+                    })
+                    .catch(error => {
+                        console.error(`${logPrefix} 企业微信机器人通知发送出错:`, error);
+                        return { channel: 'wechatbot', success: false, error: error.message };
+                    })
+            );
+        }
+        
+        if (config.ENABLED_NOTIFIERS.includes('weixin')) {
+            console.log(`${logPrefix} 准备发送企业微信通知`);
+            const weixinContent = `【${title}】\n\n${commonContent.replace(/(\**|\*|##|#|`)/g, '')}`;
+            notificationPromises.push(
+                sendWeComNotification(weixinContent, config)
+                    .then(result => {
+                        console.log(`${logPrefix} 企业微信通知发送 ${result.success ? '成功' : '失败'}. ${result.message}`);
+                        return { channel: 'weixin', success: result.success };
+                    })
+                    .catch(error => {
+                        console.error(`${logPrefix} 企业微信通知发送出错:`, error);
+                        return { channel: 'weixin', success: false, error: error.message };
+                    })
+            );
+        }
+        
+        if (config.ENABLED_NOTIFIERS.includes('email')) {
+            console.log(`${logPrefix} 准备发送邮件通知`);
+            const emailContent = commonContent.replace(/(\**|\*|##|#|`)/g, '');
+            notificationPromises.push(
+                sendEmailNotification(title, emailContent, config)
+                    .then(success => {
+                        console.log(`${logPrefix} 邮件通知发送 ${success ? '成功' : '失败'}`);
+                        return { channel: 'email', success };
+                    })
+                    .catch(error => {
+                        console.error(`${logPrefix} 邮件通知发送出错:`, error);
+                        return { channel: 'email', success: false, error: error.message };
+                    })
+            );
+        }
+
+        if (notificationPromises.length === 0) {
+            console.log(`${logPrefix} 没有有效的通知渠道可以发送`);
+            return;
+        }
+
+        console.log(`${logPrefix} 开始并发发送 ${notificationPromises.length} 个通知`);
+        const results = await Promise.allSettled(notificationPromises);
+        
+        let successCount = 0;
+        let failureCount = 0;
+        
+        results.forEach((result, index) => {
+            if (result.status === 'fulfilled') {
+                const notificationResult = result.value;
+                if (notificationResult.success) {
+                    successCount++;
+                } else {
+                    failureCount++;
+                }
+            } else {
+                console.error(`${logPrefix} 通知发送 Promise 失败:`, result.reason);
+                failureCount++;
+            }
+        });
+        
+        console.log(`${logPrefix} 通知发送完成，成功: ${successCount}，失败: ${failureCount}`);
+        
+    } catch (error) {
+        console.error(`${logPrefix} 发送通知到所有渠道失败:`, error);
+        console.error(`${logPrefix} 错误堆栈:`, error.stack);
     }
 }
 
@@ -3605,186 +3857,331 @@ async function checkExpiringSubscriptions(env) {
     const beijingTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
     console.log('[定时任务] 开始检查即将到期的订阅 UTC: ' + now.toISOString() + ', 北京时间: ' + beijingTime.toLocaleString('zh-CN', {timeZone: 'Asia/Shanghai'}));
 
-    const subscriptions = await getAllSubscriptions(env);
-    console.log('[定时任务] 共找到 ' + subscriptions.length + ' 个订阅');
+    let subscriptions;
+    try {
+      subscriptions = await getAllSubscriptions(env);
+      console.log('[定时任务] 成功获取订阅数据，共找到 ' + subscriptions.length + ' 个订阅');
+    } catch (error) {
+      console.error('[定时任务] 获取订阅数据失败:', error);
+      throw new Error('无法获取订阅数据: ' + error.message);
+    }
 
-    const config = await getConfig(env);
+    let config;
+    try {
+      config = await getConfig(env);
+      console.log('[定时任务] 成功获取系统配置');
+    } catch (error) {
+      console.error('[定时任务] 获取系统配置失败:', error);
+      throw new Error('无法获取系统配置: ' + error.message);
+    }
+
     const expiringSubscriptions = [];
     const updatedSubscriptions = [];
     let hasUpdates = false;
 
 for (const subscription of subscriptions) {
-  if (subscription.isActive === false) {
-    console.log('[定时任务] 订阅 "' + subscription.name + '" 已停用，跳过');
-    continue;
-  }
+  try {
+    console.log('[定时任务] 正在处理订阅: "' + subscription.name + '"');
+    
+    if (subscription.isActive === false) {
+      console.log('[定时任务] 订阅 "' + subscription.name + '" 已停用，跳过');
+      continue;
+    }
 
-  let daysDiff;
-  if (subscription.useLunar) {
-    const expiryDate = new Date(subscription.expiryDate);
-    let lunar = lunarCalendar.solar2lunar(
-      expiryDate.getFullYear(),
-      expiryDate.getMonth() + 1,
-      expiryDate.getDate()
-    );
-    daysDiff = lunarBiz.daysToLunar(lunar);
+    let daysDiff;
+    if (subscription.useLunar) {
+      try {
+        const expiryDate = new Date(subscription.expiryDate);
+        console.log('[定时任务] 处理农历订阅 "' + subscription.name + '"，到期日期: ' + expiryDate.toISOString());
+        
+        let lunar = lunarCalendar.solar2lunar(
+          expiryDate.getFullYear(),
+          expiryDate.getMonth() + 1,
+          expiryDate.getDate()
+        );
+        
+        if (!lunar) {
+          console.error('[定时任务] 农历转换失败，订阅: "' + subscription.name + '"，日期超出支持范围');
+          continue;
+        }
+        
+        daysDiff = lunarBiz.daysToLunar(lunar);
+        console.log('[定时任务] 订阅 "' + subscription.name + '" 农历剩余天数: ' + daysDiff);
 
-    console.log('[定时任务] 订阅 "' + subscription.name + '" 到期日期: ' + expiryDate.toISOString() + ', 剩余天数: ' + daysDiff);
+        if (daysDiff < 0 && subscription.periodValue && subscription.periodUnit && subscription.autoRenew !== false) {
+          console.log('[定时任务] 订阅 "' + subscription.name + '" 已过期，尝试自动续订');
+          let nextLunar = lunar;
+          let iterations = 0;
+          const maxIterations = 100; // 防止无限循环
+          
+          do {
+            if (iterations++ > maxIterations) {
+              console.error('[定时任务] 农历续订计算超过最大迭代次数，订阅: "' + subscription.name + '"');
+              break;
+            }
+            
+            try {
+              nextLunar = lunarBiz.addLunarPeriod(nextLunar, subscription.periodValue, subscription.periodUnit);
+              const solar = lunarBiz.lunar2solar(nextLunar);
+              
+              if (!solar) {
+                console.error('[定时任务] 农历转公历失败，订阅: "' + subscription.name + '"');
+                break;
+              }
+              
+              var newExpiryDate = new Date(solar.year, solar.month - 1, solar.day);
+              daysDiff = lunarBiz.daysToLunar(nextLunar);
+              console.log('[定时任务] 订阅 "' + subscription.name + '" 农历续订后到期日: ' + newExpiryDate.toISOString() + ', 剩余天数: ' + daysDiff);
+            } catch (lunarError) {
+              console.error('[定时任务] 农历计算出错，订阅: "' + subscription.name + '"，错误:', lunarError);
+              break;
+            }
+          } while (daysDiff < 0);
 
-    if (daysDiff < 0 && subscription.periodValue && subscription.periodUnit && subscription.autoRenew !== false) {
-      let nextLunar = lunar;
-      do {
-        nextLunar = lunarBiz.addLunarPeriod(nextLunar, subscription.periodValue, subscription.periodUnit);
-        const solar = lunarBiz.lunar2solar(nextLunar);
-        var newExpiryDate = new Date(solar.year, solar.month - 1, solar.day);
-        daysDiff = lunarBiz.daysToLunar(nextLunar);
-        console.log('[定时任务] 订阅 "' + subscription.name + '" 更新到期日期: ' + newExpiryDate.toISOString() + ', 剩余天数: ' + daysDiff);
-      } while (daysDiff < 0);
+          if (daysDiff >= 0) {
+            const updatedSubscription = { ...subscription, expiryDate: newExpiryDate.toISOString() };
+            updatedSubscriptions.push(updatedSubscription);
+            hasUpdates = true;
+            console.log('[定时任务] 订阅 "' + subscription.name + '" 农历续订成功');
 
-      const updatedSubscription = { ...subscription, expiryDate: newExpiryDate.toISOString() };
-      updatedSubscriptions.push(updatedSubscription);
-      hasUpdates = true;
-
-      let reminderDays = subscription.reminderDays !== undefined ? subscription.reminderDays : 7;
-      let shouldRemindAfterRenewal = false;
-      if (reminderDays === 0) {
-        shouldRemindAfterRenewal = daysDiff === 0;
-      } else {
-        shouldRemindAfterRenewal = daysDiff >= 0 && daysDiff <= reminderDays;
+            let reminderDays = subscription.reminderDays !== undefined ? subscription.reminderDays : 7;
+            let shouldRemindAfterRenewal = false;
+            if (reminderDays === 0) {
+              shouldRemindAfterRenewal = daysDiff === 0;
+            } else {
+              shouldRemindAfterRenewal = daysDiff >= 0 && daysDiff <= reminderDays;
+            }
+            if (shouldRemindAfterRenewal) {
+              console.log('[定时任务] 订阅 "' + subscription.name + '" 农历续订后在提醒范围内，将发送通知');
+              expiringSubscriptions.push({
+                ...updatedSubscription,
+                daysRemaining: daysDiff
+              });
+            }
+          }
+          continue;
+        }
+      } catch (lunarError) {
+        console.error('[定时任务] 处理农历订阅失败，订阅: "' + subscription.name + '"，错误:', lunarError);
+        continue;
       }
-      if (shouldRemindAfterRenewal) {
+    } else {
+      try {
+        const expiryDate = new Date(subscription.expiryDate);
+        daysDiff = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+        console.log('[定时任务] 订阅 "' + subscription.name + '" 公历到期日: ' + expiryDate.toISOString() + ', 剩余天数: ' + daysDiff);
+
+        if (daysDiff < 0 && subscription.periodValue && subscription.periodUnit && subscription.autoRenew !== false) {
+          console.log('[定时任务] 订阅 "' + subscription.name + '" 已过期，尝试公历自动续订');
+          const newExpiryDate = new Date(expiryDate);
+
+          let iterations = 0;
+          const maxIterations = 100; // 防止无限循环
+          
+          while (newExpiryDate < now && iterations < maxIterations) {
+            iterations++;
+            console.log('[定时任务] 续订迭代 ' + iterations + '，当前到期日: ' + newExpiryDate.toISOString());
+            
+            try {
+              if (subscription.periodUnit === 'day') {
+                newExpiryDate.setDate(newExpiryDate.getDate() + subscription.periodValue);
+              } else if (subscription.periodUnit === 'month') {
+                newExpiryDate.setMonth(newExpiryDate.getMonth() + subscription.periodValue);
+              } else if (subscription.periodUnit === 'year') {
+                newExpiryDate.setFullYear(newExpiryDate.getFullYear() + subscription.periodValue);
+              }
+            } catch (dateError) {
+              console.error('[定时任务] 日期计算出错，订阅: "' + subscription.name + '"，错误:', dateError);
+              break;
+            }
+          }
+
+          if (iterations >= maxIterations) {
+            console.error('[定时任务] 公历续订计算超过最大迭代次数，订阅: "' + subscription.name + '"');
+          } else {
+            console.log('[定时任务] 订阅 "' + subscription.name + '" 公历续订成功，新到期日: ' + newExpiryDate.toISOString());
+
+            const updatedSubscription = { ...subscription, expiryDate: newExpiryDate.toISOString() };
+            updatedSubscriptions.push(updatedSubscription);
+            hasUpdates = true;
+
+            const newDaysDiff = Math.ceil((newExpiryDate - now) / (1000 * 60 * 60 * 24));
+            let reminderDays = subscription.reminderDays !== undefined ? subscription.reminderDays : 7;
+            let shouldRemindAfterRenewal = false;
+            if (reminderDays === 0) {
+              shouldRemindAfterRenewal = newDaysDiff === 0;
+            } else {
+              shouldRemindAfterRenewal = newDaysDiff >= 0 && newDaysDiff <= reminderDays;
+            }
+            if (shouldRemindAfterRenewal) {
+              console.log('[定时任务] 订阅 "' + subscription.name + '" 公历续订后在提醒范围内，将发送通知');
+              expiringSubscriptions.push({
+                ...updatedSubscription,
+                daysRemaining: newDaysDiff
+              });
+            }
+          }
+          continue;
+        }
+      } catch (dateError) {
+        console.error('[定时任务] 处理公历订阅失败，订阅: "' + subscription.name + '"，错误:', dateError);
+        continue;
+      }
+    }
+
+    // 检查是否需要提醒（未续订的情况）
+    try {
+      const reminderDays = subscription.reminderDays !== undefined ? subscription.reminderDays : 7;
+      let shouldRemind = false;
+      if (reminderDays === 0) {
+        shouldRemind = daysDiff === 0;
+      } else {
+        shouldRemind = daysDiff >= 0 && daysDiff <= reminderDays;
+      }
+
+      if (daysDiff < 0 && subscription.autoRenew === false) {
+        console.log('[定时任务] 订阅 "' + subscription.name + '" 已过期且未启用自动续订，将发送过期通知');
+        expiringSubscriptions.push({
+          ...subscription,
+          daysRemaining: daysDiff
+        });
+      } else if (shouldRemind) {
         console.log('[定时任务] 订阅 "' + subscription.name + '" 在提醒范围内，将发送通知');
         expiringSubscriptions.push({
-          ...updatedSubscription,
+          ...subscription,
           daysRemaining: daysDiff
         });
       }
-      continue;
+    } catch (reminderError) {
+      console.error('[定时任务] 检查提醒条件失败，订阅: "' + subscription.name + '"，错误:', reminderError);
     }
-  } else {
-    const expiryDate = new Date(subscription.expiryDate);
-    daysDiff = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
-
-    console.log('[定时任务] 订阅 "' + subscription.name + '" 到期日期: ' + expiryDate.toISOString() + ', 剩余天数: ' + daysDiff);
-
-    if (daysDiff < 0 && subscription.periodValue && subscription.periodUnit && subscription.autoRenew !== false) {
-      const newExpiryDate = new Date(expiryDate);
-
-      if (subscription.periodUnit === 'day') {
-        newExpiryDate.setDate(expiryDate.getDate() + subscription.periodValue);
-      } else if (subscription.periodUnit === 'month') {
-        newExpiryDate.setMonth(expiryDate.getMonth() + subscription.periodValue);
-      } else if (subscription.periodUnit === 'year') {
-        newExpiryDate.setFullYear(expiryDate.getFullYear() + subscription.periodValue);
-      }
-
-      while (newExpiryDate < now) {
-        console.log('[定时任务] 新计算的到期日期 ' + newExpiryDate.toISOString() + ' 仍然过期，继续计算下一个周期');
-        if (subscription.periodUnit === 'day') {
-          newExpiryDate.setDate(newExpiryDate.getDate() + subscription.periodValue);
-        } else if (subscription.periodUnit === 'month') {
-          newExpiryDate.setMonth(newExpiryDate.getMonth() + subscription.periodValue);
-        } else if (subscription.periodUnit === 'year') {
-          newExpiryDate.setFullYear(newExpiryDate.getFullYear() + subscription.periodValue);
-        }
-      }
-
-      console.log('[定时任务] 订阅 "' + subscription.name + '" 更新到期日期: ' + newExpiryDate.toISOString());
-
-      const updatedSubscription = { ...subscription, expiryDate: newExpiryDate.toISOString() };
-      updatedSubscriptions.push(updatedSubscription);
-      hasUpdates = true;
-
-      const newDaysDiff = Math.ceil((newExpiryDate - now) / (1000 * 60 * 60 * 24));
-      let reminderDays = subscription.reminderDays !== undefined ? subscription.reminderDays : 7;
-      let shouldRemindAfterRenewal = false;
-      if (reminderDays === 0) {
-        shouldRemindAfterRenewal = newDaysDiff === 0;
-      } else {
-        shouldRemindAfterRenewal = newDaysDiff >= 0 && newDaysDiff <= reminderDays;
-      }
-      if (shouldRemindAfterRenewal) {
-        console.log('[定时任务] 订阅 "' + subscription.name + '" 在提醒范围内，将发送通知');
-        expiringSubscriptions.push({
-          ...updatedSubscription,
-          daysRemaining: newDaysDiff
-        });
-      }
-      continue;
-    }
-  }
-
-  const reminderDays = subscription.reminderDays !== undefined ? subscription.reminderDays : 7;
-  let shouldRemind = false;
-  if (reminderDays === 0) {
-    shouldRemind = daysDiff === 0;
-  } else {
-    shouldRemind = daysDiff >= 0 && daysDiff <= reminderDays;
-  }
-
-  if (daysDiff < 0 && subscription.autoRenew === false) {
-    console.log('[定时任务] 订阅 "' + subscription.name + '" 已过期且未启用自动续订，将发送过期通知');
-    expiringSubscriptions.push({
-      ...subscription,
-      daysRemaining: daysDiff
-    });
-  } else if (shouldRemind) {
-    console.log('[定时任务] 订阅 "' + subscription.name + '" 在提醒范围内，将发送通知');
-    expiringSubscriptions.push({
-      ...subscription,
-      daysRemaining: daysDiff
-    });
+  } catch (subscriptionError) {
+    console.error('[定时任务] 处理订阅失败，订阅: "' + subscription.name + '"，错误:', subscriptionError);
+    continue;
   }
 }
 
+    console.log('[定时任务] 处理完所有订阅，需要更新的订阅数量: ' + updatedSubscriptions.length);
+    console.log('[定时任务] 需要发送通知的订阅数量: ' + expiringSubscriptions.length);
+
     if (hasUpdates) {
-      const mergedSubscriptions = subscriptions.map(sub => {
-        const updated = updatedSubscriptions.find(u => u.id === sub.id);
-        return updated || sub;
-      });
-      await env.SUBSCRIPTIONS_KV.put('subscriptions', JSON.stringify(mergedSubscriptions));
+      try {
+        console.log('[定时任务] 开始更新订阅数据到KV存储');
+        const mergedSubscriptions = subscriptions.map(sub => {
+          const updated = updatedSubscriptions.find(u => u.id === sub.id);
+          return updated || sub;
+        });
+        await env.SUBSCRIPTIONS_KV.put('subscriptions', JSON.stringify(mergedSubscriptions));
+        console.log('[定时任务] 订阅数据更新成功');
+      } catch (updateError) {
+        console.error('[定时任务] 更新订阅数据失败:', updateError);
+        // 继续执行，不阻止通知发送
+      }
     }
 
     if (expiringSubscriptions.length > 0) {
-      let commonContent = '';
-      expiringSubscriptions.sort((a, b) => a.daysRemaining - b.daysRemaining);
+      try {
+        console.log('[定时任务] 开始生成和发送通知');
+        let commonContent = '';
+        expiringSubscriptions.sort((a, b) => a.daysRemaining - b.daysRemaining);
 
-      const showLunar = config.SHOW_LUNAR === true;
+        const showLunar = config.SHOW_LUNAR === true;
+        console.log('[定时任务] 农历显示设置: ' + showLunar);
 
-      for (const sub of expiringSubscriptions) {
-        const typeText = sub.customType || '其他';
-        const periodText = (sub.periodValue && sub.periodUnit) ? `(周期: ${sub.periodValue} ${ { day: '天', month: '月', year: '年' }[sub.periodUnit] || sub.periodUnit})` : '';
+        for (const sub of expiringSubscriptions) {
+          try {
+            const typeText = sub.customType || '其他';
+            const periodText = (sub.periodValue && sub.periodUnit) ? `${sub.periodValue} ${ { day: '天', month: '月', year: '年' }[sub.periodUnit] || sub.periodUnit}` : '';
 
-        let lunarExpiryText = '';
-        if (showLunar) {
-          const expiryDateObj = new Date(sub.expiryDate);
-          const lunarExpiry = lunarCalendar.solar2lunar(expiryDateObj.getFullYear(), expiryDateObj.getMonth() + 1, expiryDateObj.getDate());
-          lunarExpiryText = lunarExpiry ? ` (农历: ${lunarExpiry.fullStr})` : '';
-        }
+            let lunarExpiryText = '';
+            if (showLunar) {
+              try {
+                const expiryDateObj = new Date(sub.expiryDate);
+                const lunarExpiry = lunarCalendar.solar2lunar(expiryDateObj.getFullYear(), expiryDateObj.getMonth() + 1, expiryDateObj.getDate());
+                lunarExpiryText = lunarExpiry ? ` (农历: ${lunarExpiry.fullStr})` : '';
+              } catch (lunarError) {
+                console.error('[定时任务] 农历显示计算失败，订阅: "' + sub.name + '"，错误:', lunarError);
+              }
+            }
 
-        // 格式化金额信息
-        let amountText = '';
-        if (sub.amount && sub.amount > 0) {
-          const formattedAmount = formatCurrency(sub.amount, sub.currency);
-          if (formattedAmount) {
-            amountText = ` (${formattedAmount})`;
+            // 格式化金额信息
+            let amountText = '';
+            if (sub.amount && sub.amount > 0) {
+              try {
+                const formattedAmount = formatCurrency(sub.amount, sub.currency);
+                if (formattedAmount) {
+                  amountText = formattedAmount;
+                }
+              } catch (amountError) {
+                console.error('[定时任务] 金额格式化失败，订阅: "' + sub.name + '"，错误:', amountError);
+              }
+            }
+
+            // 使用垂直格式，与测试通知保持一致
+            let statusIcon, statusMessage;
+            if (sub.daysRemaining === 0) {
+              statusIcon = '⚠️';
+              statusMessage = '今天到期';
+            } else if (sub.daysRemaining < 0) {
+              statusIcon = '🚨';
+              statusMessage = `已过期 ${Math.abs(sub.daysRemaining)} 天`;
+            } else {
+              statusIcon = '📅';
+              statusMessage = `将在 ${sub.daysRemaining} 天后到期`;
+            }
+
+            let statusText = `${statusIcon} **${sub.name}** ${statusMessage}\n\n**订阅详情**:\n- **类型**: ${typeText}`;
+            
+            // 添加金额信息（如果有）
+            if (amountText) {
+              statusText += `\n- **金額**: ${amountText}`;
+            }
+            
+            // 添加周期信息
+            if (periodText) {
+              statusText += `\n- **周期**: ${periodText}`;
+            }
+            
+            // 添加到期日期
+            statusText += `\n- **到期日**: ${formatBeijingTime(new Date(sub.expiryDate), 'date')}`;
+            
+            // 添加农历信息（如果有）
+            if (lunarExpiryText) {
+              statusText += lunarExpiryText;
+            }
+            
+            // 添加备注（如果有）
+            if (sub.notes) {
+              statusText += `\n- **备注**: ${sub.notes}`;
+            }
+            
+            commonContent += statusText + '\n\n';
+            
+            console.log('[定时任务] 添加通知内容，订阅: "' + sub.name + '"，剩余天数: ' + sub.daysRemaining);
+          } catch (contentError) {
+            console.error('[定时任务] 生成通知内容失败，订阅: "' + sub.name + '"，错误:', contentError);
           }
         }
 
-        let statusText;
-        if (sub.daysRemaining === 0) statusText = `⚠️ **${sub.name}** (${typeText}) ${periodText}${amountText} 今天到期！${lunarExpiryText}`;
-        else if (sub.daysRemaining < 0) statusText = `🚨 **${sub.name}** (${typeText}) ${periodText}${amountText} 已过期 ${Math.abs(sub.daysRemaining)} 天${lunarExpiryText}`;
-        else statusText = `📅 **${sub.name}** (${typeText}) ${periodText}${amountText} 将在 ${sub.daysRemaining} 天后到期${lunarExpiryText}`;
-
-        if (sub.notes) statusText += `\n   备注: ${sub.notes}`;
-        commonContent += statusText + '\n\n';
+        if (commonContent.trim()) {
+          const title = '订阅到期提醒';
+          console.log('[定时任务] 开始发送通知到所有渠道，标题: "' + title + '"');
+          await sendNotificationToAllChannels(title, commonContent, config, '[定时任务]');
+          console.log('[定时任务] 通知发送完成');
+        } else {
+          console.log('[定时任务] 通知内容为空，跳过发送');
+        }
+      } catch (notificationError) {
+        console.error('[定时任务] 发送通知失败:', notificationError);
       }
-
-      const title = '订阅到期提醒';
-      await sendNotificationToAllChannels(title, commonContent, config, '[定时任务]');
+    } else {
+      console.log('[定时任务] 没有需要发送通知的订阅');
     }
+    
+    console.log('[定时任务] 检查任务完成');
   } catch (error) {
     console.error('[定时任务] 检查即将到期的订阅失败:', error);
+    console.error('[定时任务] 错误堆栈:', error.stack);
   }
 }
 
