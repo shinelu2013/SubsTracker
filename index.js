@@ -4091,7 +4091,7 @@ for (const subscription of subscriptions) {
         for (const sub of expiringSubscriptions) {
           try {
             const typeText = sub.customType || '其他';
-            const periodText = (sub.periodValue && sub.periodUnit) ? `(周期: ${sub.periodValue} ${ { day: '天', month: '月', year: '年' }[sub.periodUnit] || sub.periodUnit})` : '';
+            const periodText = (sub.periodValue && sub.periodUnit) ? `${sub.periodValue} ${ { day: '天', month: '月', year: '年' }[sub.periodUnit] || sub.periodUnit}` : '';
 
             let lunarExpiryText = '';
             if (showLunar) {
@@ -4110,7 +4110,7 @@ for (const subscription of subscriptions) {
               try {
                 const formattedAmount = formatCurrency(sub.amount, sub.currency);
                 if (formattedAmount) {
-                  amountText = ` (${formattedAmount})`;
+                  amountText = formattedAmount;
                 }
               } catch (amountError) {
                 console.error('[定时任务] 金额格式化失败，订阅: "' + sub.name + '"，错误:', amountError);
@@ -4134,12 +4134,12 @@ for (const subscription of subscriptions) {
             
             // 添加金额信息（如果有）
             if (amountText) {
-              statusText += `\n- **金額**: ${amountText.replace(/^\s*\([^)]*\)\s*/, '').trim()}`;
+              statusText += `\n- **金額**: ${amountText}`;
             }
             
             // 添加周期信息
             if (periodText) {
-              statusText += `\n- **周期**: ${periodText.replace(/^\s*\([^)]*\)\s*/, '').trim()}`;
+              statusText += `\n- **周期**: ${periodText}`;
             }
             
             // 添加到期日期
