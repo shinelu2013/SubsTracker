@@ -4117,12 +4117,44 @@ for (const subscription of subscriptions) {
               }
             }
 
-            let statusText;
-            if (sub.daysRemaining === 0) statusText = `⚠️ **${sub.name}** (${typeText}) ${periodText}${amountText} 今天到期！${lunarExpiryText}`;
-            else if (sub.daysRemaining < 0) statusText = `🚨 **${sub.name}** (${typeText}) ${periodText}${amountText} 已过期 ${Math.abs(sub.daysRemaining)} 天${lunarExpiryText}`;
-            else statusText = `📅 **${sub.name}** (${typeText}) ${periodText}${amountText} 将在 ${sub.daysRemaining} 天后到期${lunarExpiryText}`;
+            // 使用垂直格式，与测试通知保持一致
+            let statusIcon, statusMessage;
+            if (sub.daysRemaining === 0) {
+              statusIcon = '⚠️';
+              statusMessage = '今天到期';
+            } else if (sub.daysRemaining < 0) {
+              statusIcon = '🚨';
+              statusMessage = `已过期 ${Math.abs(sub.daysRemaining)} 天`;
+            } else {
+              statusIcon = '📅';
+              statusMessage = `将在 ${sub.daysRemaining} 天后到期`;
+            }
 
-            if (sub.notes) statusText += `\n   备注: ${sub.notes}`;
+            let statusText = `${statusIcon} **${sub.name}** ${statusMessage}\n\n**订阅详情**:\n- **类型**: ${typeText}`;
+            
+            // 添加金额信息（如果有）
+            if (amountText) {
+              statusText += `\n- **金額**: ${amountText.replace(/^\s*\([^)]*\)\s*/, '').trim()}`;
+            }
+            
+            // 添加周期信息
+            if (periodText) {
+              statusText += `\n- **周期**: ${periodText.replace(/^\s*\([^)]*\)\s*/, '').trim()}`;
+            }
+            
+            // 添加到期日期
+            statusText += `\n- **到期日**: ${formatBeijingTime(new Date(sub.expiryDate), 'date')}`;
+            
+            // 添加农历信息（如果有）
+            if (lunarExpiryText) {
+              statusText += lunarExpiryText;
+            }
+            
+            // 添加备注（如果有）
+            if (sub.notes) {
+              statusText += `\n- **备注**: ${sub.notes}`;
+            }
+            
             commonContent += statusText + '\n\n';
             
             console.log('[定时任务] 添加通知内容，订阅: "' + sub.name + '"，剩余天数: ' + sub.daysRemaining);
